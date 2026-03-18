@@ -534,8 +534,11 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
     transform: scale(1.02);
 }}
 
-/* Download — primary pill */
-.stDownloadButton > button {{
+/* Download — see class-specific styles */
+
+/* CSV — solid filled pill */
+.stDownloadButton button[kind="primary"],
+.stDownloadButton button[data-testid="stBaseButton-primary"] {{
     background: {ACCENT_FILL} !important;
     color: {ACCENT_TEXT} !important;
     border: none !important;
@@ -545,8 +548,28 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
     font-size: 0.85rem !important;
     transition: all 0.15s ease;
 }}
-.stDownloadButton > button:hover {{
+.stDownloadButton button[kind="primary"]:hover,
+.stDownloadButton button[data-testid="stBaseButton-primary"]:hover {{
     background: {ACCENT_HOVER} !important;
+    transform: scale(1.02);
+}}
+
+/* XLSX — outline pill */
+.stDownloadButton button[kind="secondary"],
+.stDownloadButton button[data-testid="stBaseButton-secondary"] {{
+    background: transparent !important;
+    color: {TEXT_1} !important;
+    border: 1.5px solid {BORDER} !important;
+    border-radius: 980px !important;
+    font-weight: 600 !important;
+    padding: 0.5rem 1.2rem !important;
+    font-size: 0.85rem !important;
+    transition: all 0.15s ease;
+}}
+.stDownloadButton button[kind="secondary"]:hover,
+.stDownloadButton button[data-testid="stBaseButton-secondary"]:hover {{
+    background: {SURFACE} !important;
+    border-color: {TEXT_3} !important;
     transform: scale(1.02);
 }}
 
@@ -700,6 +723,72 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 [data-testid="stExpander"] svg {{
     fill: {TEXT_2} !important;
 }}
+
+
+/* =============================================================
+   GLOBAL SVG / ICON FIX — arrows, chevrons, close buttons
+   ============================================================= */
+
+/* Main area icons */
+.stApp [data-testid="stMainBlockContainer"] svg {{
+    fill: {TEXT_2} !important;
+    color: {TEXT_2} !important;
+}}
+.stApp [data-testid="stMainBlockContainer"] svg path {{
+    fill: {TEXT_2} !important;
+}}
+/* Sidebar collapse / expand arrow */
+[data-testid="stSidebar"] svg,
+[data-testid="stSidebar"] svg path,
+button[data-testid="stSidebarCollapseButton"] svg,
+button[data-testid="stSidebarCollapseButton"] svg path,
+[data-testid="collapsedControl"] svg,
+[data-testid="collapsedControl"] svg path {{
+    fill: {SB_TX} !important;
+    color: {SB_TX} !important;
+}}
+/* Select dropdown chevron — main area */
+.stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] svg,
+.stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] svg path {{
+    fill: {TEXT_3} !important;
+}}
+/* Select dropdown chevron — sidebar */
+[data-testid="stSidebar"] [data-baseweb="select"] svg,
+[data-testid="stSidebar"] [data-baseweb="select"] svg path {{
+    fill: {SB_INPUT_TX} !important;
+}}
+/* Number input stepper arrows */
+.stApp [data-testid="stMainBlockContainer"] .stNumberInput button svg,
+.stApp [data-testid="stMainBlockContainer"] .stNumberInput button svg path {{
+    fill: {TEXT_2} !important;
+}}
+[data-testid="stSidebar"] .stNumberInput button svg,
+[data-testid="stSidebar"] .stNumberInput button svg path {{
+    fill: {SB_TX} !important;
+}}
+/* Multiselect close (x) icon */
+.stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] svg,
+.stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] svg path {{
+    fill: {TAG_TX} !important;
+}}
+/* Header hamburger / top-bar icons */
+[data-testid="stHeader"] svg,
+[data-testid="stHeader"] svg path,
+[data-testid="stHeader"] button svg,
+[data-testid="stHeader"] button svg path {{
+    fill: {TEXT_2} !important;
+    color: {TEXT_2} !important;
+}}
+/* Status widget icons */
+[data-testid="stStatusWidget"] svg,
+[data-testid="stStatusWidget"] svg path {{
+    fill: {TEXT_2} !important;
+}}
+/* Bar chart axis labels */
+.stApp [data-testid="stVegaLiteChart"] text {{
+    fill: {TEXT_3} !important;
+}}
+
 
 </style>
 """, unsafe_allow_html=True)
@@ -899,6 +988,7 @@ if df is not None and not df.empty:
             file_name=f"{fname_base}.csv",
             mime="text/csv",
             use_container_width=True,
+            type="primary",
         )
     with dl2:
         buffer = BytesIO()
@@ -911,6 +1001,7 @@ if df is not None and not df.empty:
             file_name=f"{fname_base}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.xml",
             use_container_width=True,
+            type="secondary",
         )
     with dl_meta:
         st.markdown(f"""
