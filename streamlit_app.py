@@ -81,10 +81,19 @@ button[data-testid="stSidebarCollapseButton"],
 [data-testid="collapsedControl"],
 [data-testid="stSidebarCollapsedControl"],
 [data-testid="stSidebarNav"],
-[data-testid="stHeader"] {{
+[data-testid="stHeader"],
+[data-testid="stHeaderActionElements"],
+button[kind="headerNoPadding"],
+[data-testid="stSidebar"] > div > div > div > button,
+[data-testid="stSidebarUserContent"] > div:first-child > button,
+[data-testid="stSidebar"] button[aria-label="Close"],
+[data-testid="stSidebar"] button[aria-expanded],
+.stApp header {{
     display: none !important; visibility: hidden !important;
     width: 0 !important; height: 0 !important;
     position: absolute !important; pointer-events: none !important;
+    opacity: 0 !important; overflow: hidden !important;
+    margin: 0 !important; padding: 0 !important;
 }}
 
 /* ── Global text ───────────────────────────────────────────── */
@@ -292,6 +301,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
     font-weight: 600 !important; padding: 0.45rem 1.4rem !important;
     font-size: 0.82rem !important; text-transform: none !important;
     white-space: nowrap !important;
+    -webkit-text-fill-color: #ffffff !important;
     transition: all 0.15s ease;
 }}
 .stDownloadButton > button:hover,
@@ -299,6 +309,13 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 .stDownloadButton button[kind="secondary"]:hover {{
     background: {BE_BLUE_5} !important;
     box-shadow: 0 2px 10px rgba(0,45,100,0.2);
+}}
+.stDownloadButton > button *,
+.stDownloadButton > button p,
+.stDownloadButton > button span,
+.stDownloadButton > button div {{
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
 }}
 .stDownloadButton > button svg, .stDownloadButton > button svg path {{
     fill: #ffffff !important; color: #ffffff !important;
