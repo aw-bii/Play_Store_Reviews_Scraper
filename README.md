@@ -2,7 +2,6 @@
 
 <p align="center">
   A lightweight Streamlit app that pulls, previews, and exports Google Play Store reviews.<br>
-  Built for internal use at <strong>Bertelsmann India Investments</strong>.
 </p>
 
 ---
