@@ -20,52 +20,102 @@ st.set_page_config(
     layout="wide",
 )
 
+# ── Session state init ───────────────────────────────────────
+if "df" not in st.session_state:
+    st.session_state.df = None
+    st.session_state.meta = {}
+if "chart_mode" not in st.session_state:
+    st.session_state.chart_mode = "chart"
+if "summary_text" not in st.session_state:
+    st.session_state.summary_text = None
+if "dark_mode" not in st.session_state:
+    st.session_state.dark_mode = False
+
+# ── Theme tokens ─────────────────────────────────────────────
+dark = st.session_state.dark_mode
+
+t = {
+    "bg":           "#0e0e0e" if dark else "#ffffff",
+    "surface":      "#1a1a1a" if dark else "#fafafa",
+    "surface_br":   "#2a2a2a" if dark else "#e5e5e5",
+    "text":         "#e8e8e8" if dark else "#111111",
+    "text_sec":     "#888888" if dark else "#888888",
+    "text_muted":   "#666666" if dark else "#999999",
+    "sidebar_bg":   "#111111" if dark else "#111111",
+    "sidebar_text": "#f0f0f0" if dark else "#f0f0f0",
+    "input_bg":     "rgba(255,255,255,0.08)" if dark else "rgba(255,255,255,0.08)",
+    "input_br":     "rgba(255,255,255,0.15)" if dark else "rgba(255,255,255,0.15)",
+    "accent":       "#ffffff" if dark else "#111111",
+    "accent_inv":   "#111111" if dark else "#ffffff",
+    "chart_color":  "#888888" if dark else "#111111",
+    "card_shadow":  "none" if dark else "0 1px 3px rgba(0,0,0,0.04)",
+    "summary_bg":   "#1a1a1a" if dark else "#f7f7f7",
+    "summary_br":   "#2a2a2a" if dark else "#e8e8e8",
+    "summary_text": "#d4d4d4" if dark else "#222222",
+    "summary_h":    "#e8e8e8" if dark else "#111111",
+    "metric_label": "#777777" if dark else "#888888",
+    "metric_val":   "#e8e8e8" if dark else "#111111",
+    "divider":      "#2a2a2a" if dark else "#eeeeee",
+    "bar_label":    "#aaaaaa" if dark else "#555555",
+}
+
 # ── CSS ──────────────────────────────────────────────────────
-st.markdown("""
+st.markdown(f"""
 <style>
     /* ── Base ─────────────────────────────────────────────── */
-    .block-container {
+    .stApp {{
+        background: {t['bg']} !important;
+    }}
+    .block-container {{
         padding: 2rem 3rem 2.5rem !important;
         max-width: 1200px;
-    }
+    }}
+
+    /* ── Global text override for dark mode ────────────────── */
+    .stApp, .stApp p, .stApp span, .stApp div, .stApp label {{
+        color: {t['text']} !important;
+    }}
+    .stApp .stMarkdown p {{
+        color: {t['text']} !important;
+    }}
 
     /* ── Sidebar ──────────────────────────────────────────── */
-    [data-testid="stSidebar"] {
-        background: #111111;
-    }
-    [data-testid="stSidebar"] * {
-        color: #f0f0f0 !important;
-    }
-    [data-testid="stSidebar"] > div:first-child {
+    [data-testid="stSidebar"] {{
+        background: {t['sidebar_bg']} !important;
+    }}
+    [data-testid="stSidebar"] * {{
+        color: {t['sidebar_text']} !important;
+    }}
+    [data-testid="stSidebar"] > div:first-child {{
         padding: 2rem 1.5rem !important;
-    }
-    [data-testid="stSidebar"] label {
+    }}
+    [data-testid="stSidebar"] label {{
         font-weight: 600 !important;
         font-size: 0.78rem !important;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         opacity: 0.7;
         margin-bottom: 2px !important;
-    }
+    }}
     [data-testid="stSidebar"] .stTextInput input,
     [data-testid="stSidebar"] .stNumberInput input,
     [data-testid="stSidebar"] .stSelectbox [data-baseweb="select"],
-    [data-testid="stSidebar"] .stMultiSelect [data-baseweb="select"] {
-        background: rgba(255,255,255,0.08) !important;
-        border: 1px solid rgba(255,255,255,0.15) !important;
+    [data-testid="stSidebar"] .stMultiSelect [data-baseweb="select"] {{
+        background: {t['input_bg']} !important;
+        border: 1px solid {t['input_br']} !important;
         color: #fff !important;
         border-radius: 8px !important;
-    }
-    [data-testid="stSidebar"] .stTextInput input::placeholder {
+    }}
+    [data-testid="stSidebar"] .stTextInput input::placeholder {{
         color: rgba(255,255,255,0.35) !important;
-    }
-    [data-testid="stSidebar"] hr {
+    }}
+    [data-testid="stSidebar"] hr {{
         border-color: rgba(255,255,255,0.1) !important;
         margin: 1.2rem 0 !important;
-    }
+    }}
 
-    /* ── Sidebar button ───────────────────────────────────── */
-    [data-testid="stSidebar"] .stButton > button {
+    /* ── Sidebar primary button ────────────────────────────── */
+    [data-testid="stSidebar"] .stButton > button {{
         background: #ffffff !important;
         color: #111111 !important;
         border: none !important;
@@ -74,144 +124,165 @@ st.markdown("""
         font-weight: 700 !important;
         font-size: 0.9rem !important;
         transition: all 0.15s ease;
-    }
-    [data-testid="stSidebar"] .stButton > button:hover {
+    }}
+    [data-testid="stSidebar"] .stButton > button:hover {{
         background: #e0e0e0 !important;
         transform: translateY(-1px);
         box-shadow: 0 4px 14px rgba(255,255,255,0.15);
-    }
+    }}
 
-    /* ── Main buttons ─────────────────────────────────────── */
-    .stDownloadButton > button {
-        background: #111111 !important;
-        color: #fff !important;
+    /* ── Main area buttons ────────────────────────────────── */
+    .stApp [data-testid="stMainBlockContainer"] .stButton > button {{
+        background: {t['surface']} !important;
+        color: {t['text']} !important;
+        border: 1px solid {t['surface_br']} !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        padding: 0.4rem 1rem !important;
+        font-size: 0.82rem !important;
+        transition: all 0.15s ease;
+    }}
+    .stApp [data-testid="stMainBlockContainer"] .stButton > button:hover {{
+        background: {t['surface_br']} !important;
+        transform: translateY(-1px);
+    }}
+
+    /* ── Download buttons ─────────────────────────────────── */
+    .stDownloadButton > button {{
+        background: {t['accent']} !important;
+        color: {t['accent_inv']} !important;
         border: none !important;
         border-radius: 8px !important;
         font-weight: 600 !important;
         padding: 0.5rem 1rem !important;
         font-size: 0.85rem !important;
         transition: all 0.15s ease;
-    }
-    .stDownloadButton > button:hover {
-        background: #333 !important;
+    }}
+    .stDownloadButton > button:hover {{
+        opacity: 0.85;
         transform: translateY(-1px);
-    }
+    }}
 
     /* ── Metric cards ─────────────────────────────────────── */
-    div[data-testid="stMetric"] {
-        background: #fafafa;
-        border: 1px solid #e5e5e5;
+    div[data-testid="stMetric"] {{
+        background: {t['surface']};
+        border: 1px solid {t['surface_br']};
         border-radius: 10px;
         padding: 16px 20px;
-    }
-    div[data-testid="stMetric"] label {
-        color: #888 !important;
+        box-shadow: {t['card_shadow']};
+    }}
+    div[data-testid="stMetric"] label {{
+        color: {t['metric_label']} !important;
         font-size: 0.72rem !important;
         text-transform: uppercase;
         letter-spacing: 0.06em;
         font-weight: 600 !important;
-    }
-    div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-        color: #111 !important;
+    }}
+    div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
+        color: {t['metric_val']} !important;
         font-weight: 700 !important;
-    }
+    }}
 
     /* ── Header ───────────────────────────────────────────── */
-    .app-header {
-        margin-bottom: 0.2rem;
-    }
-    .app-header h1 {
+    .app-header h1 {{
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        color: #111;
+        color: {t['text']};
         font-size: 1.7rem;
         font-weight: 800;
         margin: 0;
         letter-spacing: -0.02em;
-    }
-    .app-sub {
-        color: #999;
+    }}
+    .app-sub {{
+        color: {t['text_muted']};
         font-size: 0.88rem;
         margin-bottom: 1rem;
-    }
+    }}
 
     /* ── Section headers ──────────────────────────────────── */
-    .section-hdr {
+    .section-hdr {{
         font-weight: 700;
         font-size: 0.95rem;
-        color: #111;
+        color: {t['text']};
         margin: 1.4rem 0 0.5rem;
-    }
+    }}
 
     /* ── Dataframe ────────────────────────────────────────── */
-    [data-testid="stDataFrame"] {
-        border: 1px solid #e5e5e5;
+    [data-testid="stDataFrame"] {{
+        border: 1px solid {t['surface_br']};
         border-radius: 10px;
         overflow: hidden;
-    }
+    }}
 
-    /* ── Toggle row ───────────────────────────────────────── */
-    .toggle-row {
-        display: flex;
-        gap: 6px;
-        margin: 0.6rem 0 0.8rem;
-    }
-    .toggle-btn {
-        padding: 5px 14px;
-        border-radius: 6px;
-        font-size: 0.78rem;
-        font-weight: 600;
-        cursor: pointer;
-        border: 1px solid #ddd;
-        background: #fff;
-        color: #555;
-        text-decoration: none;
-    }
-    .toggle-btn.active {
-        background: #111;
-        color: #fff;
-        border-color: #111;
-    }
+    /* ── Divider ──────────────────────────────────────────── */
+    .stApp hr {{
+        border-color: {t['divider']} !important;
+    }}
 
     /* ── Empty state ──────────────────────────────────────── */
-    .empty-state {
+    .empty-state {{
         text-align: center;
         padding: 6rem 2rem;
-        color: #bbb;
-    }
-    .empty-state .icon { font-size: 2.4rem; margin-bottom: 0.8rem; }
-    .empty-state p {
+    }}
+    .empty-state .icon {{
+        font-size: 2.4rem;
+        margin-bottom: 0.8rem;
+        color: {t['text_muted']};
+    }}
+    .empty-state p {{
         font-size: 0.95rem;
         max-width: 360px;
         margin: 0 auto;
         line-height: 1.6;
-        color: #999;
-    }
+        color: {t['text_muted']};
+    }}
 
     /* ── Summary card ─────────────────────────────────────── */
-    .summary-card {
-        background: #fafafa;
-        border: 1px solid #e5e5e5;
+    .summary-card {{
+        background: {t['summary_bg']};
+        border: 1px solid {t['summary_br']};
         border-radius: 10px;
         padding: 1.5rem 1.8rem;
         margin-top: 0.8rem;
-        line-height: 1.7;
-        font-size: 0.92rem;
-        color: #222;
-    }
-    .summary-card h4 {
-        margin: 1rem 0 0.3rem;
+        line-height: 1.75;
+        font-size: 0.91rem;
+        color: {t['summary_text']};
+    }}
+    .summary-card h1, .summary-card h2, .summary-card h3,
+    .summary-card h4, .summary-card h5 {{
+        color: {t['summary_h']} !important;
+        margin: 1.1rem 0 0.3rem;
         font-size: 0.88rem;
-        color: #111;
         font-weight: 700;
-    }
-    .summary-card h4:first-child { margin-top: 0; }
-    .summary-card ul { padding-left: 1.2rem; margin: 0.2rem 0; }
-    .summary-card li { margin-bottom: 0.15rem; }
+    }}
+    .summary-card h4:first-child {{ margin-top: 0; }}
+    .summary-card ul {{ padding-left: 1.2rem; margin: 0.2rem 0; }}
+    .summary-card li {{ margin-bottom: 0.2rem; color: {t['summary_text']}; }}
+    .summary-card strong {{ color: {t['summary_h']}; }}
+
+    /* ── Status widget ────────────────────────────────────── */
+    [data-testid="stStatusWidget"] {{
+        background: {t['surface']} !important;
+        border: 1px solid {t['surface_br']} !important;
+        border-radius: 10px !important;
+    }}
+
+    /* ── Checkbox and toggle styling ──────────────────────── */
+    .stCheckbox label span {{
+        color: {t['text']} !important;
+    }}
+
+    /* ── Theme toggle pill ────────────────────────────────── */
+    .theme-toggle {{
+        position: fixed;
+        top: 14px;
+        right: 20px;
+        z-index: 9999;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
 # ── Header ───────────────────────────────────────────────────
-st.markdown("""
+st.markdown(f"""
 <div class="app-header">
     <h1>Play Store Reviews Scraper</h1>
 </div>
@@ -249,24 +320,22 @@ with st.sidebar:
     st.divider()
     scrape = st.button("Start Scraping", use_container_width=True)
 
-# ── Session state init ───────────────────────────────────────
-SORT_MAP = {"Most Relevant": Sort.MOST_RELEVANT, "Newest": Sort.NEWEST}
+    # ── Theme toggle at bottom of sidebar ────────────────────
+    st.divider()
+    mode_label = "Switch to Light Mode" if dark else "Switch to Dark Mode"
+    if st.button(mode_label, use_container_width=True, key="theme_toggle"):
+        st.session_state.dark_mode = not st.session_state.dark_mode
+        st.rerun()
 
-if "df" not in st.session_state:
-    st.session_state.df = None
-    st.session_state.meta = {}
-if "chart_mode" not in st.session_state:
-    st.session_state.chart_mode = "chart"
-if "summary_text" not in st.session_state:
-    st.session_state.summary_text = None
 
 # ── Scraping ─────────────────────────────────────────────────
+SORT_MAP = {"Most Relevant": Sort.MOST_RELEVANT, "Newest": Sort.NEWEST}
+
 if scrape:
     if not app_id.strip():
         st.error("Enter an App ID to continue.")
         st.stop()
 
-    # Reset state on new scrape
     st.session_state.summary_text = None
     st.session_state.chart_mode = "chart"
 
@@ -335,13 +404,13 @@ if scrape:
     st.session_state.df = df
     st.session_state.meta = {"app_id": app_id, "country": country}
 
+
 # ── Display ──────────────────────────────────────────────────
 df = st.session_state.df
 
 if df is not None and not df.empty:
     meta = st.session_state.meta
 
-    # Columns to show
     show_cols = ["User", "Rating", "Review", "Date"]
     if include_version and "App Version" in df.columns:
         show_cols.append("App Version")
@@ -355,25 +424,27 @@ if df is not None and not df.empty:
     m3.metric("5-Star", f"{(df['Rating'] == 5).sum():,}" if "Rating" in df.columns else "—")
     m4.metric("1-Star", f"{(df['Rating'] == 1).sum():,}" if "Rating" in df.columns else "—")
 
-    # ── Rating distribution toggle ───────────────────────────
+    # ── Rating distribution ──────────────────────────────────
     st.markdown('<div class="section-hdr">Rating Distribution</div>', unsafe_allow_html=True)
 
-    tog_col1, tog_col2, _ = st.columns([0.08, 0.08, 0.84])
-    with tog_col1:
+    tog1, tog2, _ = st.columns([0.08, 0.08, 0.84])
+    with tog1:
         if st.button("Chart", key="btn_chart", use_container_width=True):
             st.session_state.chart_mode = "chart"
-    with tog_col2:
+            st.rerun()
+    with tog2:
         if st.button("Table", key="btn_table", use_container_width=True):
             st.session_state.chart_mode = "table"
+            st.rerun()
 
     if "Rating" in df.columns:
         dist = df["Rating"].value_counts().reindex([1, 2, 3, 4, 5], fill_value=0)
         if st.session_state.chart_mode == "chart":
-            st.bar_chart(dist, color="#111111", height=220)
+            st.bar_chart(dist, color=t["chart_color"], height=220)
         else:
             dist_df = pd.DataFrame({
                 "Rating": [f"{i} ★" for i in range(1, 6)],
-                "Count": [dist.get(i, 0) for i in range(1, 6)],
+                "Count": [int(dist.get(i, 0)) for i in range(1, 6)],
                 "Share": [f"{dist.get(i, 0) / len(df) * 100:.1f}%" for i in range(1, 6)],
             })
             st.dataframe(dist_df, use_container_width=False, hide_index=True)
@@ -395,8 +466,8 @@ if df is not None and not df.empty:
 
     fname_base = f"{meta.get('app_id', 'app')}_{meta.get('country', 'xx')}_{datetime.now().strftime('%Y%m%d_%H%M')}"
 
-    dl_col1, dl_col2, _ = st.columns([0.15, 0.15, 0.7])
-    with dl_col1:
+    dl1, dl2, _ = st.columns([0.15, 0.15, 0.7])
+    with dl1:
         csv_data = display_df.to_csv(index=False).encode("utf-8")
         st.download_button(
             label="Download CSV",
@@ -405,7 +476,7 @@ if df is not None and not df.empty:
             mime="text/csv",
             use_container_width=True,
         )
-    with dl_col2:
+    with dl2:
         buffer = BytesIO()
         with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
             display_df.to_excel(writer, index=False, sheet_name="Reviews")
@@ -445,13 +516,14 @@ if df is not None and not df.empty:
             "notably, arguably, it's important to note, it's worth noting, delve, streamline, "
             "leverage, robust, comprehensive, cutting-edge, holistic, game-changer, paradigm, "
             "synergy, innovative, seamless, dynamic, transformative.\n"
-            "- Do NOT use em dashes (—). Use commas or periods instead.\n"
+            "- Do NOT use em dashes. Use commas or periods instead.\n"
             "- Do NOT use rule-of-three constructions (e.g., 'fast, reliable, and intuitive').\n"
             "- Write in plain, direct language. Short sentences. No filler.\n"
-            "- Sound like a sharp analyst writing a Slack message to their team, not a blog post."
+            "- Sound like a sharp analyst writing a Slack message to their team, not a blog post.\n"
+            "- Use markdown formatting: **bold** for section headers, bullet points for lists."
         )
 
-        GEMINI_API_KEY = "AIzaSyCRutXDv-_1eYpYg6M6BJjPntTGp1TCqDk"
+        GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
 
         payload = {
@@ -485,7 +557,7 @@ if df is not None and not df.empty:
         )
 
 else:
-    st.markdown("""
+    st.markdown(f"""
     <div class="empty-state">
         <div class="icon">★</div>
         <p>Enter an <b>App ID</b> in the sidebar and hit <b>Start Scraping</b> to pull reviews.</p>
