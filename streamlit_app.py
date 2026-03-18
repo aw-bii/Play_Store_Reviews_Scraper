@@ -10,15 +10,7 @@ import pandas as pd
 from google_play_scraper import Sort, reviews
 from datetime import datetime
 import time
-import requests
-import json
 from io import BytesIO
-
-try:
-    import markdown as md_lib
-    HAS_MD = True
-except ImportError:
-    HAS_MD = False
 
 try:
     import pycountry
@@ -39,11 +31,12 @@ DEFAULT_COUNTRY_IDX = COUNTRY_NAMES.index("India") if "India" in COUNTRY_NAMES e
 
 st.set_page_config(
     page_title="Play Store Reviews Scraper",
+    page_icon="★",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-for key, default in [("df", None), ("meta", {}), ("summary_text", None)]:
+for key, default in [("df", None), ("meta", {})]:
     if key not in st.session_state:
         st.session_state[key] = default
 
@@ -223,17 +216,17 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
     text-transform: none !important;
 }}
 
-/* Sidebar: inputs — HIGH CONTRAST white text */
+/* Sidebar: text inputs — white bg, Be Blue text */
 [data-testid="stSidebar"] .stTextInput input,
 [data-testid="stSidebar"] .stNumberInput input {{
-    background: rgba(0,0,0,0.25) !important;
-    border: 1px solid rgba(255,255,255,0.25) !important;
-    color: #ffffff !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    color: {BE_BLUE} !important;
     border-radius: 4px !important;
     padding: 0.5rem 0.75rem !important;
     font-size: 0.88rem !important;
-    caret-color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
+    caret-color: {BE_BLUE} !important;
+    -webkit-text-fill-color: {BE_BLUE} !important;
 }}
 [data-testid="stSidebar"] .stTextInput input:focus,
 [data-testid="stSidebar"] .stNumberInput input:focus {{
@@ -241,12 +234,12 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
     box-shadow: 0 0 0 2px rgba(175,190,210,0.3) !important;
 }}
 [data-testid="stSidebar"] .stTextInput input::placeholder {{
-    color: rgba(175,190,210,0.7) !important;
-    -webkit-text-fill-color: rgba(175,190,210,0.7) !important;
+    color: {BE_BLUE_5} !important;
+    -webkit-text-fill-color: {BE_BLUE_5} !important;
 }}
 [data-testid="stSidebar"] .stNumberInput button {{
-    color: #ffffff !important; border-color: rgba(255,255,255,0.25) !important;
-    background: rgba(0,0,0,0.25) !important;
+    color: {BE_BLUE} !important; border-color: rgba(255,255,255,0.3) !important;
+    background: #ffffff !important;
 }}
 
 /* Sidebar: selects */
@@ -343,7 +336,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] svg path {{ fill: {TEXT_3} !important; }}
 [data-testid="stSidebar"] [data-baseweb="select"] svg path {{ fill: #ffffff !important; }}
 .stApp [data-testid="stMainBlockContainer"] .stNumberInput button svg path {{ fill: {TEXT_2} !important; }}
-[data-testid="stSidebar"] .stNumberInput button svg path {{ fill: #ffffff !important; }}
+[data-testid="stSidebar"] .stNumberInput button svg path {{ fill: {BE_BLUE} !important; }}
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] svg path {{ fill: {BE_BLUE} !important; }}
 
 /* ── Custom HTML ───────────────────────────────────────────── */
@@ -435,7 +428,6 @@ if scrape:
     if not app_id.strip():
         st.error("Enter an App ID to continue.")
         st.stop()
-    st.session_state.summary_text = None
     sort_val = SORT_MAP[sort_order]
     filter_val = filter_score if filter_score else None
 
@@ -507,57 +499,7 @@ if df is not None and not df.empty:
     m3.metric("5-star", f"{five_star:,}")
     m4.metric("NPS", f"{nps:+d}", help="Promoters (5★) minus Detractors (1–3★), as a % of total reviews")
 
-    # ── 2. AI Summary ────────────────────────────────────────
-    st.divider()
-    st.markdown('<div class="section-hdr">AI summary</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="blue-pill">', unsafe_allow_html=True)
-    summarize_clicked = st.button("Summarize reviews", use_container_width=False)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    if summarize_clicked:
-        reviews_text = "\n\n".join(
-            f"[{row.get('Rating', '?')}★] {row.get('Review', '')}" for _, row in df.head(300).iterrows()
-        )
-        system_prompt = (
-            "Act as an expert App Product Manager and Data Analyst. "
-            "I am going to provide you with a batch of user reviews from the Google Play Store for an app. "
-            "Your task is to analyze these reviews and provide a structured, actionable summary.\n\n"
-            "Please format your response with the following sections:\n"
-            "1. Overall Sentiment: A brief paragraph summarizing the general mood of the users "
-            "(Positive, Negative, Mixed) and the primary reasons why.\n"
-            "2. Top Praises (Pros): List the top 3-5 things users love most about the app.\n"
-            "3. Top Complaints (Cons): List the top 3-5 pain points, frustrations, or negative experiences users are having.\n"
-            "4. Reported Bugs: Highlight any specific technical issues, crashes, or glitches mentioned by multiple users.\n"
-            "5. Feature Requests: Note any specific features or improvements users are asking for.\n\n"
-            "Please ignore spam or overly generic reviews (e.g., just saying 'good' or 'bad' without context).\n\n"
-            "IMPORTANT WRITING RULES — follow these strictly:\n"
-            "- Do NOT use any of these words: crucial, pivotal, landscape, testament, underscores, "
-            "notably, arguably, it's important to note, it's worth noting, delve, streamline, "
-            "leverage, robust, comprehensive, cutting-edge, holistic, game-changer, paradigm, "
-            "synergy, innovative, seamless, dynamic, transformative.\n"
-            "- Do NOT use em dashes. Use commas or periods instead.\n"
-            "- Do NOT use rule-of-three constructions.\n"
-            "- Write in plain, direct language. Short sentences. No filler.\n"
-            "- Sound like a sharp analyst writing a Slack message to their team, not a blog post.\n"
-            "- Use markdown formatting: **bold** for section headers, bullet points for lists."
-        )
-        GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
-        payload = {"contents": [{"parts": [{"text": f"{system_prompt}\n\nHere are the reviews:\n\n{reviews_text}"}]}],
-                   "generationConfig": {"temperature": 0.4, "maxOutputTokens": 2048}}
-        with st.spinner("Generating summary..."):
-            try:
-                resp = requests.post(url, json=payload, timeout=60); resp.raise_for_status()
-                st.session_state.summary_text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
-            except Exception as e:
-                st.error(f"Summary generation failed: {e}")
-
-    if st.session_state.summary_text:
-        html_summary = md_lib.markdown(st.session_state.summary_text) if HAS_MD else st.session_state.summary_text
-        st.markdown(f'<div class="summary-card">{html_summary}</div>', unsafe_allow_html=True)
-
-    # ── 3. Export ────────────────────────────────────────────
+    # ── 2. Export ────────────────────────────────────────────
     st.divider()
     st.markdown('<div class="section-hdr">Export</div>', unsafe_allow_html=True)
 
@@ -588,7 +530,7 @@ if df is not None and not df.empty:
         st.download_button("Download XLSX", xlsx_data, f"{fname_base}.xlsx",
                            "application/vnd.openxmlformats-officedocument.spreadsheetml.xml", use_container_width=True)
 
-    # ── 4. Reviews table ─────────────────────────────────────
+    # ── 3. Reviews table ─────────────────────────────────────
     st.divider()
     st.markdown('<div class="section-hdr">Reviews</div>', unsafe_allow_html=True)
     st.dataframe(display_df, use_container_width=True, height=480,
