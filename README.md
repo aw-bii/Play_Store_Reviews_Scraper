@@ -1,8 +1,6 @@
-<h1 align="center">Play Store Reviews Scraper</h1>
+# Play Store Reviews Scraper
 
-<p align="center">
-  A lightweight Streamlit app that pulls, previews, and exports Google Play Store reviews.<br>
-</p>
+A lightweight Streamlit app that pulls, previews, and exports Google Play Store reviews — with an AI-powered summary feature.
 
 ---
 
@@ -10,43 +8,42 @@
 
 - Scrapes up to 10,000 reviews for any Google Play app
 - Filter by country, star rating, and sort order
-- View summary metrics (avg rating, distribution) in-app
-- One-click CSV export
+- View summary metrics and rating distribution (chart or table view)
+- Export as CSV or XLSX
+- One-click AI summary of reviews powered by Gemini
 
 ## Quick start
 
 ```bash
-# Clone
 git clone https://github.com/aw-bii/Play_Store_Reviews_Scraper.git
 cd Play_Store_Reviews_Scraper
 
-# Install dependencies
 pip install -r requirements.txt
 
-# Run
 streamlit run app.py
 ```
 
-The app opens at `http://localhost:8501`.
+Opens at `http://localhost:8501`.
 
 ## Deploy (Streamlit Community Cloud)
 
 1. Push this repo to GitHub
 2. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub
-3. Click **New app** → select this repo → set `app.py` as the main file
-4. Hit **Deploy**
+3. Click **New app** — select this repo — set `app.py` as the main file
+4. Deploy
 
-You'll get a public URL like `https://your-app.streamlit.app`. Set to invite-only under **Settings → Sharing** to restrict access to the team.
+Set to invite-only under **Settings > Sharing** to restrict access.
 
 ## Usage
 
-| Field        | Example              | Description                          |
-|--------------|----------------------|--------------------------------------|
-| App ID       | `com.spotify.music`  | From the Play Store URL (`?id=...`)  |
-| Country      | `in`                 | ISO 3166-1 alpha-2 code              |
-| Reviews      | `500`                | Number of reviews to fetch (1–10000) |
-| Sort By      | `Newest`             | Most Relevant or Newest              |
-| Star Filter  | `1, 2`               | Optional — leave empty for all       |
+| Field         | Example             | Description                            |
+|---------------|---------------------|----------------------------------------|
+| App ID        | `com.spotify.music` | From the Play Store URL (`?id=...`)    |
+| Country       | `in`                | ISO 3166-1 alpha-2 code                |
+| Reviews       | `500`               | Number of reviews to fetch (1-10000)   |
+| Sort By       | `Newest`            | Newest or Most Relevant                |
+| Star Filter   | `1, 2`              | Optional — leave empty for all         |
+| App Version   | checkbox            | Toggle to include version column       |
 
 ## Dependencies
 
@@ -54,7 +51,9 @@ You'll get a public URL like `https://your-app.streamlit.app`. Set to invite-onl
 |----------------------|----------------------------|
 | `streamlit`          | Web UI                     |
 | `google-play-scraper`| Play Store data extraction |
-| `pandas`             | Data handling & CSV export |
+| `pandas`             | Data handling and export   |
+| `openpyxl`           | XLSX export                |
+| `requests`           | Gemini API calls           |
 
 ## License
 
