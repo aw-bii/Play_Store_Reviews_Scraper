@@ -2,7 +2,7 @@
 Google Play Store Reviews Scraper
 Bertelsmann Corporate Design
 Run:  streamlit run play-store-scraper.py
-Deps: pip install streamlit google-play-scraper pandas openpyxl requests markdown pycountry
+Deps: pip install streamlit google-play-scraper pandas openpyxl pycountry
 """
 
 import streamlit as st
@@ -29,37 +29,21 @@ except ImportError:
 COUNTRY_NAMES = list(COUNTRIES.keys())
 DEFAULT_COUNTRY_IDX = COUNTRY_NAMES.index("India") if "India" in COUNTRY_NAMES else 0
 
-st.set_page_config(
-    page_title="Play Store Reviews Scraper",
-    page_icon="★",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+st.set_page_config(page_title="Play Store Reviews Scraper", page_icon="★", layout="wide", initial_sidebar_state="expanded")
 
 for key, default in [("df", None), ("meta", {})]:
     if key not in st.session_state:
         st.session_state[key] = default
 
-
 # ══════════════════════════════════════════════════════════════
-# BERTELSMANN TOKENS
+# TOKENS
 # ══════════════════════════════════════════════════════════════
-
-BE_BLUE   = "#002d64"
-BE_BLUE_2 = "#afbed2"
-BE_BLUE_5 = "#415f8c"
-BE_GRAY   = "#464646"
-BE_GRAY_2 = "#dcdcdc"
-BE_GRAY_3 = "#cdcdcd"
-BE_GRAY_4 = "#a0a0a0"
-BE_GRAY_5 = "#646464"
-BE_RED    = "#e60028"
-BE_RED_2  = "#eb5a50"
-
-BG = "#ffffff"; SURFACE = "#f5f6f8"; BORDER = BE_GRAY_2; BORDER_SUB = "#e8ecf0"
+BE_BLUE = "#002d64"; BE_BLUE_2 = "#afbed2"; BE_BLUE_5 = "#415f8c"
+BE_GRAY = "#464646"; BE_GRAY_2 = "#dcdcdc"; BE_GRAY_3 = "#cdcdcd"
+BE_GRAY_4 = "#a0a0a0"; BE_GRAY_5 = "#646464"
+BE_RED = "#e60028"; BE_RED_2 = "#eb5a50"
 TEXT_1 = BE_GRAY; TEXT_2 = BE_GRAY_5; TEXT_3 = BE_GRAY_4
-CARD_BG = "#f5f6f8"; CARD_BR = "#e8ecf0"; CARD_LABEL = BE_GRAY_5; CARD_VALUE = BE_BLUE
-
+CARD_BG = "#f5f6f8"; CARD_BR = "#e8ecf0"
 
 # ══════════════════════════════════════════════════════════════
 # CSS
@@ -69,24 +53,30 @@ st.markdown(f"""
 
 *, *::before, *::after {{
     font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif !important;
+    box-sizing: border-box !important;
 }}
 
-.stApp {{ background: {BG} !important; }}
-.block-container {{ padding: 2.5rem 3rem 3rem !important; max-width: 1100px; }}
+/* ── Page ──────────────────────────────────────────────────── */
+.stApp {{ background: #ffffff !important; }}
+.block-container {{
+    padding: 2.5rem 3rem 3rem !important;
+    max-width: 1100px;
+    min-width: 0 !important;
+}}
 
-/* ── Sidebar: fixed, 1/3 screen ────────────────────────────── */
+/* ── Sidebar: fixed 1/3, non-collapsible ───────────────────── */
 [data-testid="stSidebar"] {{
     background: {BE_BLUE} !important;
-    min-width: 33.33vw !important;
-    max-width: 33.33vw !important;
-    transform: none !important;
-    transition: none !important;
+    min-width: 33.33vw !important; max-width: 33.33vw !important;
+    width: 33.33vw !important;
+    transform: none !important; transition: none !important;
+    flex-shrink: 0 !important;
 }}
 [data-testid="stSidebar"] > div:first-child {{
     padding: 2.2rem 2rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
 }}
-
-/* Hide every collapse / hamburger control */
 button[data-testid="stSidebarCollapseButton"],
 [data-testid="collapsedControl"],
 [data-testid="stSidebarCollapsedControl"],
@@ -114,7 +104,7 @@ button[data-testid="stSidebarCollapseButton"],
     color: {TEXT_1} !important;
 }}
 
-/* ── Labels (no caps) ──────────────────────────────────────── */
+/* ── Labels ────────────────────────────────────────────────── */
 .stApp [data-testid="stMainBlockContainer"] label,
 .stApp [data-testid="stMainBlockContainer"] label p,
 .stApp [data-testid="stMainBlockContainer"] label span,
@@ -125,21 +115,20 @@ button[data-testid="stSidebarCollapseButton"],
     color: {TEXT_2} !important; text-transform: none !important;
 }}
 
-/* ── Inputs (main area) ────────────────────────────────────── */
+/* ── Inputs (main) ─────────────────────────────────────────── */
 .stApp [data-testid="stMainBlockContainer"] .stTextInput input,
 .stApp [data-testid="stMainBlockContainer"] .stNumberInput input,
 .stApp [data-testid="stMainBlockContainer"] .stTextArea textarea {{
-    background: #ffffff !important; color: {BE_GRAY} !important;
+    background: #fff !important; color: {BE_GRAY} !important;
     border: 1px solid {BE_GRAY_3} !important; border-radius: 4px !important;
     padding: 0.5rem 0.75rem !important; font-size: 0.88rem !important;
+    width: 100% !important; min-width: 0 !important;
 }}
 .stApp [data-testid="stMainBlockContainer"] .stTextInput input:focus,
 .stApp [data-testid="stMainBlockContainer"] .stNumberInput input:focus {{
     border-color: {BE_BLUE} !important; box-shadow: 0 0 0 2px rgba(0,45,100,0.12) !important;
 }}
-.stApp [data-testid="stMainBlockContainer"] .stTextInput input::placeholder {{
-    color: {BE_GRAY_4} !important;
-}}
+.stApp [data-testid="stMainBlockContainer"] .stTextInput input::placeholder {{ color: {BE_GRAY_4} !important; }}
 .stApp [data-testid="stMainBlockContainer"] .stNumberInput button {{
     color: {TEXT_2} !important; border-color: {BE_GRAY_3} !important; background: #fff !important;
 }}
@@ -161,7 +150,7 @@ button[data-testid="stSidebarCollapseButton"],
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] span {{ color: {BE_BLUE} !important; }}
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] svg {{ fill: {BE_BLUE} !important; }}
 
-/* ── Dropdown popover ──────────────────────────────────────── */
+/* ── Dropdown ──────────────────────────────────────────────── */
 [data-baseweb="popover"], [data-baseweb="popover"] > div,
 [data-baseweb="menu"], [data-baseweb="menu"] ul,
 [data-baseweb="list"], [data-baseweb="list"] ul {{
@@ -171,9 +160,7 @@ button[data-testid="stSidebarCollapseButton"],
     color: {BE_GRAY} !important; background: transparent !important;
 }}
 [data-baseweb="popover"] li:hover, [data-baseweb="menu"] li:hover,
-[data-baseweb="popover"] li[aria-selected="true"] {{
-    background: #f5f6f8 !important;
-}}
+[data-baseweb="popover"] li[aria-selected="true"] {{ background: #f5f6f8 !important; }}
 [data-baseweb="popover"] li span, [data-baseweb="menu"] li span {{ color: {BE_GRAY} !important; }}
 
 /* ── Tooltip ───────────────────────────────────────────────── */
@@ -183,18 +170,21 @@ button[data-testid="stSidebarCollapseButton"],
 
 /* ── Metric cards ──────────────────────────────────────────── */
 div[data-testid="stMetric"] {{
-    background: {CARD_BG}; border: 1px solid {CARD_BR}; border-radius: 4px; padding: 18px 22px;
+    background: {CARD_BG}; border: 1px solid {CARD_BR}; border-radius: 4px;
+    padding: 18px 22px; min-width: 0 !important;
 }}
 div[data-testid="stMetric"]:hover {{ box-shadow: 0 2px 12px rgba(0,45,100,0.05); }}
 div[data-testid="stMetric"] label, div[data-testid="stMetric"] label p {{
-    color: {CARD_LABEL} !important; font-size: 0.72rem !important;
+    color: {BE_GRAY_5} !important; font-size: 0.72rem !important;
     letter-spacing: 0.03em; font-weight: 600 !important; text-transform: none !important;
+    white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
 }}
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
-    color: {CARD_VALUE} !important; font-weight: 700 !important; font-size: 1.5rem !important;
+    color: {BE_BLUE} !important; font-weight: 700 !important; font-size: 1.5rem !important;
+    white-space: nowrap !important;
 }}
 
-/* ── Sidebar: all text ─────────────────────────────────────── */
+/* ── Sidebar: text ─────────────────────────────────────────── */
 [data-testid="stSidebar"] p, [data-testid="stSidebar"] span,
 [data-testid="stSidebar"] div, [data-testid="stSidebar"] li,
 [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
@@ -211,8 +201,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 }}
 [data-testid="stSidebar"] label, [data-testid="stSidebar"] label p {{
     font-weight: 600 !important; font-size: 0.75rem !important;
-    letter-spacing: 0.03em; color: {BE_BLUE_2} !important;
-    text-transform: none !important;
+    letter-spacing: 0.03em; color: {BE_BLUE_2} !important; text-transform: none !important;
 }}
 
 /* Sidebar: text inputs — white bg, Be Blue text */
@@ -222,10 +211,10 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
     border: 1px solid rgba(255,255,255,0.3) !important;
     color: {BE_BLUE} !important;
     border-radius: 4px !important;
-    padding: 0.5rem 0.75rem !important;
-    font-size: 0.88rem !important;
+    padding: 0.5rem 0.75rem !important; font-size: 0.88rem !important;
     caret-color: {BE_BLUE} !important;
     -webkit-text-fill-color: {BE_BLUE} !important;
+    width: 100% !important; min-width: 0 !important;
 }}
 [data-testid="stSidebar"] .stTextInput input:focus,
 [data-testid="stSidebar"] .stNumberInput input:focus {{
@@ -233,8 +222,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
     box-shadow: 0 0 0 2px rgba(175,190,210,0.3) !important;
 }}
 [data-testid="stSidebar"] .stTextInput input::placeholder {{
-    color: {BE_BLUE_5} !important;
-    -webkit-text-fill-color: {BE_BLUE_5} !important;
+    color: {BE_BLUE_5} !important; -webkit-text-fill-color: {BE_BLUE_5} !important;
 }}
 [data-testid="stSidebar"] .stNumberInput button {{
     color: {BE_BLUE} !important; border-color: rgba(255,255,255,0.3) !important;
@@ -245,8 +233,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 [data-testid="stSidebar"] [data-baseweb="select"],
 [data-testid="stSidebar"] [data-baseweb="select"] > div {{
     background: rgba(0,0,0,0.25) !important;
-    border-color: rgba(255,255,255,0.25) !important;
-    border-radius: 4px !important;
+    border-color: rgba(255,255,255,0.25) !important; border-radius: 4px !important;
 }}
 [data-testid="stSidebar"] [data-baseweb="select"] span,
 [data-testid="stSidebar"] [data-baseweb="select"] [class*="singleValue"],
@@ -270,12 +257,13 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
     display: flex !important; align-items: center !important; gap: 0.5rem !important;
 }}
 
-/* ── Sidebar CTA — Be Red pill ─────────────────────────────── */
+/* ── Sidebar CTA ───────────────────────────────────────────── */
 [data-testid="stSidebar"] .stButton > button {{
     background: {BE_RED} !important; color: #ffffff !important;
     border: none !important; border-radius: 980px !important;
     padding: 0.6rem 1.4rem !important; font-weight: 700 !important;
     font-size: 0.85rem !important; text-transform: none !important;
+    width: 100% !important;
     transition: all 0.15s ease;
 }}
 [data-testid="stSidebar"] .stButton > button:hover {{
@@ -284,7 +272,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 
 /* ── Main generic buttons ──────────────────────────────────── */
 .stApp [data-testid="stMainBlockContainer"] .stButton > button {{
-    background: {SURFACE} !important; color: {TEXT_1} !important;
+    background: #f5f6f8 !important; color: {TEXT_1} !important;
     border: 1px solid {BE_GRAY_3} !important; border-radius: 4px !important;
     font-weight: 600 !important; padding: 0.4rem 1rem !important;
     font-size: 0.82rem !important; text-transform: none !important;
@@ -293,40 +281,40 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
     background: {BE_GRAY_2} !important;
 }}
 
-/* ── Download + Summary — Be Blue pill ─────────────────────── */
+/* ── Download pills — Be Blue bg, white text ───────────────── */
 .stDownloadButton > button,
 .stDownloadButton button[kind="primary"],
 .stDownloadButton button[kind="secondary"],
 .stDownloadButton button[data-testid="stBaseButton-primary"],
-.stDownloadButton button[data-testid="stBaseButton-secondary"],
-.blue-pill .stButton > button {{
+.stDownloadButton button[data-testid="stBaseButton-secondary"] {{
     background: {BE_BLUE} !important; color: #ffffff !important;
     border: none !important; border-radius: 980px !important;
-    font-weight: 600 !important; padding: 0.5rem 1.3rem !important;
-    font-size: 0.85rem !important; text-transform: none !important;
+    font-weight: 600 !important; padding: 0.45rem 1.4rem !important;
+    font-size: 0.82rem !important; text-transform: none !important;
+    white-space: nowrap !important;
     transition: all 0.15s ease;
 }}
 .stDownloadButton > button:hover,
 .stDownloadButton button[kind="primary"]:hover,
-.stDownloadButton button[kind="secondary"]:hover,
-.blue-pill .stButton > button:hover {{
+.stDownloadButton button[kind="secondary"]:hover {{
     background: {BE_BLUE_5} !important;
     box-shadow: 0 2px 10px rgba(0,45,100,0.2);
 }}
-/* Icon color inside blue pill buttons */
-.stDownloadButton > button svg, .stDownloadButton > button svg path,
-.blue-pill .stButton > button svg, .blue-pill .stButton > button svg path {{
+.stDownloadButton > button svg, .stDownloadButton > button svg path {{
     fill: #ffffff !important; color: #ffffff !important;
 }}
 
-/* ── Status — removed, but just in case ────────────────────── */
+/* ── Status hidden ─────────────────────────────────────────── */
 [data-testid="stStatusWidget"] {{ display: none !important; }}
 
 /* ── Dataframe ─────────────────────────────────────────────── */
-[data-testid="stDataFrame"] {{ border: 1px solid {BORDER}; border-radius: 4px; overflow: hidden; }}
+[data-testid="stDataFrame"] {{
+    border: 1px solid {BE_GRAY_2}; border-radius: 4px; overflow: hidden;
+    min-width: 0 !important;
+}}
 
 /* ── Dividers ──────────────────────────────────────────────── */
-.stApp hr {{ border-color: {BORDER_SUB} !important; }}
+.stApp hr {{ border-color: #e8ecf0 !important; }}
 
 /* ── SVG icons ─────────────────────────────────────────────── */
 .stApp [data-testid="stMainBlockContainer"] svg {{ fill: {TEXT_2} !important; }}
@@ -341,51 +329,69 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 /* ── Custom HTML ───────────────────────────────────────────── */
 .app-header h1 {{
     color: {BE_BLUE}; font-size: 2rem; font-weight: 700; margin: 0;
-    letter-spacing: -0.02em; line-height: 1.15;
+    letter-spacing: -0.02em; line-height: 1.15; white-space: nowrap;
 }}
 .app-sub {{
     color: {TEXT_3}; font-size: 0.92rem; margin-top: 0.4rem; margin-bottom: 2rem;
 }}
 .section-hdr {{
-    font-weight: 700; font-size: 1.05rem; color: {BE_BLUE};
-    margin: 2rem 0 0.7rem;
+    font-weight: 700; font-size: 1.05rem; color: {BE_BLUE}; margin: 2rem 0 0.7rem;
 }}
 .empty-state {{ text-align: center; padding: 8rem 2rem; }}
 .empty-state .icon {{ font-size: 2.4rem; margin-bottom: 1rem; color: {TEXT_3}; }}
 .empty-state p {{ font-size: 0.95rem; max-width: 360px; margin: 0 auto; line-height: 1.7; color: {TEXT_3}; }}
 .empty-state b {{ color: {TEXT_2}; }}
 
-/* Export card */
-.export-card {{
-    background: {CARD_BG};
-    border: 1px solid {CARD_BR};
-    border-radius: 6px;
-    padding: 1.1rem 1.5rem;
-    margin: 0.6rem 0 1rem;
-}}
-.export-inner {{
+/* ── Export row ─────────────────────────────────────────────── */
+.export-row {{
     display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: nowrap;
 }}
-.export-inner .val {{
-    font-size: 1.15rem;
+.export-row .label {{
+    font-size: 0.88rem;
     font-weight: 700;
     color: {BE_BLUE};
-    line-height: 1;
-}}
-.export-inner .lbl {{
-    font-size: 0.78rem;
-    color: {TEXT_3};
-    font-weight: 400;
-}}
-.export-inner .sep {{
-    color: {BE_GRAY_3};
-    font-size: 0.75rem;
-    margin: 0 0.6rem;
+    white-space: nowrap;
+    flex-shrink: 0;
 }}
 
-/* Summary + blue-pill removed — kept download pill styles only */
+/* Export file info */
+.export-info {{
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    margin-top: 0.7rem;
+}}
+.export-info .val {{
+    font-size: 0.88rem; font-weight: 700; color: {TEXT_1};
+}}
+.export-info .lbl {{
+    font-size: 0.78rem; color: {TEXT_3}; font-weight: 400;
+}}
+.export-info .sep {{
+    color: {BE_GRAY_3}; margin: 0 0.35rem; font-size: 0.7rem;
+}}
+
+/* ── Responsive: keep everything stable ────────────────────── */
+.stApp [data-testid="stMainBlockContainer"] [data-testid="stHorizontalBlock"] {{
+    flex-wrap: nowrap !important;
+    min-width: 0 !important;
+}}
+.stApp [data-testid="stMainBlockContainer"] [data-testid="stHorizontalBlock"] > div {{
+    min-width: 0 !important;
+    flex-shrink: 1 !important;
+}}
+/* Prevent columns from stacking */
+@media (max-width: 768px) {{
+    .stApp [data-testid="stMainBlockContainer"] [data-testid="stHorizontalBlock"] {{
+        flex-wrap: nowrap !important;
+    }}
+    [data-testid="stSidebar"] {{
+        min-width: 280px !important; max-width: 280px !important; width: 280px !important;
+    }}
+}}
 
 </style>
 """, unsafe_allow_html=True)
@@ -409,12 +415,9 @@ with st.sidebar:
         "App ID", placeholder="com.example.app",
         help="From the Play Store URL: play.google.com/store/apps/details?id=com.example.app",
     )
-
     country_name = st.selectbox("Country", options=COUNTRY_NAMES, index=DEFAULT_COUNTRY_IDX)
     country_code = COUNTRIES.get(country_name, "in")
-
     count = st.number_input("Number of reviews", min_value=1, max_value=1000000, value=200, step=50)
-
     sort_order = st.selectbox("Sort by", ["Newest", "Most Relevant"])
     filter_score = st.multiselect("Star filter", options=[1, 2, 3, 4, 5], default=[], help="Leave empty for all ratings")
 
@@ -422,7 +425,7 @@ with st.sidebar:
     scrape = st.button("Start scraping", use_container_width=True)
 
 
-# ── Scraping (no status widget) ──────────────────────────────
+# ── Scraping ─────────────────────────────────────────────────
 SORT_MAP = {"Most Relevant": Sort.MOST_RELEVANT, "Newest": Sort.NEWEST}
 
 if scrape:
@@ -443,13 +446,11 @@ if scrape:
                 filter_score_with=filter_val[0] if filter_val and len(filter_val) == 1 else None,
                 continuation_token=token,
             )
-            if not result:
-                break
+            if not result: break
             all_reviews.extend(result)
             pct = min(len(all_reviews) / count, 1.0)
             progress.progress(pct, text=f"Fetched {len(all_reviews):,} / {count:,} reviews")
-            if token is None:
-                break
+            if token is None: break
             time.sleep(0.3)
         progress.empty()
     except Exception as e:
@@ -502,7 +503,6 @@ if df is not None and not df.empty:
 
     # ── 2. Export ────────────────────────────────────────────
     st.divider()
-    st.markdown('<div class="section-hdr">Export</div>', unsafe_allow_html=True)
 
     fname_base = f"{meta.get('app_id', 'app')}_{meta.get('country', 'xx')}_{datetime.now().strftime('%Y%m%d_%H%M')}"
     csv_data = display_df.to_csv(index=False).encode("utf-8")
@@ -514,24 +514,24 @@ if df is not None and not df.empty:
     file_size_kb = max(len(csv_data), len(xlsx_data)) / 1024
     size_str = f"{file_size_kb / 1024:.1f} MB" if file_size_kb >= 1024 else f"{file_size_kb:.0f} KB"
 
+    # Download label + pills
+    lbl_col, csv_col, xlsx_col, spacer = st.columns([0.09, 0.1, 0.1, 0.71])
+    with lbl_col:
+        st.markdown('<div style="padding-top:0.35rem;"><span class="export-row"><span class="label">Download</span></span></div>', unsafe_allow_html=True)
+    with csv_col:
+        st.download_button("CSV", csv_data, f"{fname_base}.csv", "text/csv", use_container_width=True)
+    with xlsx_col:
+        st.download_button("Excel", xlsx_data, f"{fname_base}.xlsx",
+                           "application/vnd.openxmlformats-officedocument.spreadsheetml.xml", use_container_width=True)
+
+    # File info beneath
     st.markdown(f"""
-    <div class="export-card">
-        <div class="export-inner">
-            <span class="val">{len(display_df):,}</span>
-            <span class="lbl">rows</span>
-            <span class="sep">·</span>
-            <span class="val">{size_str}</span>
-            <span class="lbl">file size</span>
-        </div>
+    <div class="export-info">
+        <span class="val">{len(display_df):,}</span><span class="lbl">rows</span>
+        <span class="sep">·</span>
+        <span class="val">{size_str}</span><span class="lbl">file size</span>
     </div>
     """, unsafe_allow_html=True)
-
-    dl1, dl2, _ = st.columns([0.14, 0.14, 0.72])
-    with dl1:
-        st.download_button("Download CSV", csv_data, f"{fname_base}.csv", "text/csv", use_container_width=True)
-    with dl2:
-        st.download_button("Download XLSX", xlsx_data, f"{fname_base}.xlsx",
-                           "application/vnd.openxmlformats-officedocument.spreadsheetml.xml", use_container_width=True)
 
     # ── 3. Reviews table ─────────────────────────────────────
     st.divider()
