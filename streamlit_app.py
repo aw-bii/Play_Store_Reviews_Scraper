@@ -59,7 +59,6 @@ BE_RED_2  = "#eb5a50"
 BG = "#ffffff"; SURFACE = "#f5f6f8"; BORDER = BE_GRAY_2; BORDER_SUB = "#e8ecf0"
 TEXT_1 = BE_GRAY; TEXT_2 = BE_GRAY_5; TEXT_3 = BE_GRAY_4
 CARD_BG = "#f5f6f8"; CARD_BR = "#e8ecf0"; CARD_LABEL = BE_GRAY_5; CARD_VALUE = BE_BLUE
-SUMMARY_BG = "#f5f6f8"; SUMMARY_BR = "#e8ecf0"; SUMMARY_TX = BE_GRAY; SUMMARY_H = BE_BLUE
 
 
 # ══════════════════════════════════════════════════════════════
@@ -356,35 +355,37 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 .empty-state p {{ font-size: 0.95rem; max-width: 360px; margin: 0 auto; line-height: 1.7; color: {TEXT_3}; }}
 .empty-state b {{ color: {TEXT_2}; }}
 
-/* Export meta row */
-.export-meta {{
-    display: flex; align-items: center; gap: 1.5rem;
-    margin-top: 0.8rem; flex-wrap: wrap;
+/* Export card */
+.export-card {{
+    background: {CARD_BG};
+    border: 1px solid {CARD_BR};
+    border-radius: 6px;
+    padding: 1.1rem 1.5rem;
+    margin: 0.6rem 0 1rem;
 }}
-.export-meta .stat {{
-    font-size: 0.82rem; color: {TEXT_3};
+.export-inner {{
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
 }}
-.export-meta .stat b {{
-    color: {TEXT_1}; font-weight: 700; font-size: 0.95rem;
+.export-inner .val {{
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: {BE_BLUE};
+    line-height: 1;
 }}
-.export-meta .stat span {{
-    display: block; font-size: 0.7rem; color: {TEXT_3}; margin-top: 1px;
+.export-inner .lbl {{
+    font-size: 0.78rem;
+    color: {TEXT_3};
+    font-weight: 400;
+}}
+.export-inner .sep {{
+    color: {BE_GRAY_3};
+    font-size: 0.75rem;
+    margin: 0 0.6rem;
 }}
 
-/* Summary card */
-.summary-card {{
-    background: {SUMMARY_BG}; border: 1px solid {SUMMARY_BR}; border-radius: 4px;
-    padding: 1.6rem 1.8rem; margin-top: 0.8rem; line-height: 1.75; font-size: 0.9rem; color: {SUMMARY_TX};
-}}
-.summary-card p {{ color: {SUMMARY_TX} !important; }}
-.summary-card li {{ color: {SUMMARY_TX} !important; margin-bottom: 0.2rem; }}
-.summary-card ul, .summary-card ol {{ padding-left: 1.2rem; margin: 0.3rem 0 0.6rem; }}
-.summary-card h1, .summary-card h2, .summary-card h3,
-.summary-card h4, .summary-card h5, .summary-card strong {{ color: {SUMMARY_H} !important; }}
-.summary-card h2 {{ font-size: 0.95rem; font-weight: 700; margin: 1rem 0 0.4rem; }}
-.summary-card h3 {{ font-size: 0.9rem; font-weight: 700; margin: 0.8rem 0 0.3rem; }}
-.summary-card h4 {{ font-size: 0.85rem; font-weight: 700; margin: 0.8rem 0 0.3rem; }}
-.summary-card h2:first-child, .summary-card h3:first-child, .summary-card h4:first-child {{ margin-top: 0; }}
+/* Summary + blue-pill removed — kept download pill styles only */
 
 </style>
 """, unsafe_allow_html=True)
@@ -511,19 +512,21 @@ if df is not None and not df.empty:
     xlsx_data = buf.getvalue()
 
     file_size_kb = max(len(csv_data), len(xlsx_data)) / 1024
-    if file_size_kb >= 1024:
-        size_str = f"{file_size_kb / 1024:.1f} MB"
-    else:
-        size_str = f"{file_size_kb:.0f} KB"
+    size_str = f"{file_size_kb / 1024:.1f} MB" if file_size_kb >= 1024 else f"{file_size_kb:.0f} KB"
 
     st.markdown(f"""
-    <div class="export-meta">
-        <div class="stat"><b>{len(display_df):,}</b><span>rows</span></div>
-        <div class="stat"><b>{size_str}</b><span>file size</span></div>
+    <div class="export-card">
+        <div class="export-inner">
+            <span class="val">{len(display_df):,}</span>
+            <span class="lbl">rows</span>
+            <span class="sep">·</span>
+            <span class="val">{size_str}</span>
+            <span class="lbl">file size</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    dl1, dl2, _ = st.columns([0.16, 0.16, 0.68])
+    dl1, dl2, _ = st.columns([0.14, 0.14, 0.72])
     with dl1:
         st.download_button("Download CSV", csv_data, f"{fname_base}.csv", "text/csv", use_container_width=True)
     with dl2:
