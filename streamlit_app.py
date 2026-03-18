@@ -1,7 +1,7 @@
 """
 Google Play Store Reviews Scraper
 Run:  streamlit run play-store-scraper.py
-Deps: pip install streamlit google-play-scraper pandas openpyxl requests
+Deps: pip install streamlit google-play-scraper pandas openpyxl requests markdown
 """
 
 import streamlit as st
@@ -12,7 +12,12 @@ import time
 import requests
 import json
 from io import BytesIO
-import markdown as md_lib
+
+try:
+    import markdown as md_lib
+    HAS_MD = True
+except ImportError:
+    HAS_MD = False
 
 # ── Page config ──────────────────────────────────────────────
 st.set_page_config(
@@ -22,122 +27,127 @@ st.set_page_config(
 )
 
 # ── Session state ────────────────────────────────────────────
-if "df" not in st.session_state:
-    st.session_state.df = None
-    st.session_state.meta = {}
-if "chart_mode" not in st.session_state:
-    st.session_state.chart_mode = "chart"
-if "summary_text" not in st.session_state:
-    st.session_state.summary_text = None
-if "dark_mode" not in st.session_state:
-    st.session_state.dark_mode = False
+for key, default in [
+    ("df", None), ("meta", {}), ("chart_mode", "chart"),
+    ("summary_text", None), ("dark_mode", False),
+]:
+    if key not in st.session_state:
+        st.session_state[key] = default
 
 dark = st.session_state.dark_mode
 
+
 # ══════════════════════════════════════════════════════════════
 # DESIGN TOKENS
-# A single source of truth for every color in the app.
-# Everything references these — nothing is hardcoded in CSS.
+# Inspired by Apple product pages: generous whitespace,
+# large type, minimal chrome, pill CTAs, section rhythm.
 # ══════════════════════════════════════════════════════════════
 
 if dark:
-    # ── Dark palette ─────────────────────────────────────────
-    PAGE_BG         = "#0e0e0e"
-    SURFACE         = "#161616"
-    SURFACE_HOVER   = "#1e1e1e"
-    BORDER          = "#282828"
-    BORDER_FOCUS    = "#444444"
+    BG            = "#000000"
+    BG_ELEVATED   = "#0d0d0d"
+    SURFACE       = "#141414"
+    SURFACE_ALT   = "#1a1a1a"
+    BORDER        = "#222222"
+    BORDER_SUB    = "#1c1c1c"
 
-    TEXT_PRIMARY    = "#e2e2e2"
-    TEXT_SECONDARY  = "#aaaaaa"
-    TEXT_MUTED      = "#737373"
+    TEXT_1        = "#f5f5f7"   # primary
+    TEXT_2        = "#a1a1a6"   # secondary
+    TEXT_3        = "#6e6e73"   # muted
 
-    INPUT_BG        = "#1a1a1a"
-    INPUT_BORDER    = "#333333"
-    INPUT_TEXT      = "#e2e2e2"
-    INPUT_PLACEHOLDER = "#5a5a5a"
+    INPUT_BG      = "#1a1a1a"
+    INPUT_BR      = "#333333"
+    INPUT_TX      = "#f5f5f7"
+    INPUT_PH      = "#555555"
+    INPUT_FOCUS   = "#0071e3"
 
-    LABEL_COLOR     = "#c0c0c0"
+    TAG_BG        = "#2a2a2a"
+    TAG_TX        = "#d2d2d7"
 
-    ACCENT          = "#ffffff"
-    ACCENT_HOVER    = "#dddddd"
-    ACCENT_INV      = "#0e0e0e"
+    DROP_BG       = "#1c1c1e"
+    DROP_HOVER    = "#2c2c2e"
+    DROP_TX       = "#f5f5f7"
 
-    CHART_COLOR     = "#808080"
+    ACCENT_FILL   = "#f5f5f7"
+    ACCENT_TEXT   = "#000000"
+    ACCENT_HOVER  = "#d2d2d7"
 
-    METRIC_LABEL    = "#909090"
-    METRIC_VALUE    = "#e2e2e2"
+    BTN_SEC_BG    = "#1a1a1a"
+    BTN_SEC_TX    = "#f5f5f7"
+    BTN_SEC_BR    = "#333333"
+    BTN_SEC_HOVER = "#222222"
 
-    SUMMARY_BG      = "#141414"
-    SUMMARY_BORDER  = "#282828"
-    SUMMARY_TEXT    = "#cccccc"
-    SUMMARY_HEADING = "#e2e2e2"
+    CHART_CLR     = "#636366"
 
-    TAG_BG          = "#2a2a2a"
-    TAG_TEXT         = "#d0d0d0"
+    CARD_BG       = "#141414"
+    CARD_BR       = "#222222"
+    CARD_LABEL    = "#86868b"
+    CARD_VALUE    = "#f5f5f7"
 
-    DROPDOWN_BG     = "#1a1a1a"
-    DROPDOWN_HOVER  = "#262626"
-    DROPDOWN_TEXT   = "#e2e2e2"
+    SUMMARY_BG    = "#0d0d0d"
+    SUMMARY_BR    = "#1c1c1c"
+    SUMMARY_TX    = "#d2d2d7"
+    SUMMARY_H     = "#f5f5f7"
 
-    # Sidebar (always dark)
-    SB_BG           = "#0a0a0a"
-    SB_TEXT         = "#e8e8e8"
-    SB_LABEL        = "#aaaaaa"
-    SB_INPUT_BG     = "#161616"
-    SB_INPUT_BORDER = "#2a2a2a"
-    SB_INPUT_TEXT   = "#e8e8e8"
-    SB_PLACEHOLDER  = "#555555"
-    SB_DIVIDER      = "#222222"
+    SB_BG         = "#000000"
 else:
-    # ── Light palette ────────────────────────────────────────
-    PAGE_BG         = "#ffffff"
-    SURFACE         = "#f7f7f7"
-    SURFACE_HOVER   = "#eeeeee"
-    BORDER          = "#e2e2e2"
-    BORDER_FOCUS    = "#bbbbbb"
+    BG            = "#ffffff"
+    BG_ELEVATED   = "#ffffff"
+    SURFACE       = "#f5f5f7"
+    SURFACE_ALT   = "#fbfbfd"
+    BORDER        = "#d2d2d7"
+    BORDER_SUB    = "#e8e8ed"
 
-    TEXT_PRIMARY    = "#111111"
-    TEXT_SECONDARY  = "#555555"
-    TEXT_MUTED      = "#999999"
+    TEXT_1        = "#1d1d1f"
+    TEXT_2        = "#6e6e73"
+    TEXT_3        = "#86868b"
 
-    INPUT_BG        = "#ffffff"
-    INPUT_BORDER    = "#cccccc"
-    INPUT_TEXT      = "#111111"
-    INPUT_PLACEHOLDER = "#aaaaaa"
+    INPUT_BG      = "#ffffff"
+    INPUT_BR      = "#d2d2d7"
+    INPUT_TX      = "#1d1d1f"
+    INPUT_PH      = "#86868b"
+    INPUT_FOCUS   = "#0071e3"
 
-    LABEL_COLOR     = "#333333"
+    TAG_BG        = "#e8e8ed"
+    TAG_TX        = "#1d1d1f"
 
-    ACCENT          = "#111111"
-    ACCENT_HOVER    = "#333333"
-    ACCENT_INV      = "#ffffff"
+    DROP_BG       = "#ffffff"
+    DROP_HOVER    = "#f5f5f7"
+    DROP_TX       = "#1d1d1f"
 
-    CHART_COLOR     = "#111111"
+    ACCENT_FILL   = "#1d1d1f"
+    ACCENT_TEXT   = "#ffffff"
+    ACCENT_HOVER  = "#333336"
 
-    METRIC_LABEL    = "#888888"
-    METRIC_VALUE    = "#111111"
+    BTN_SEC_BG    = "#f5f5f7"
+    BTN_SEC_TX    = "#1d1d1f"
+    BTN_SEC_BR    = "#d2d2d7"
+    BTN_SEC_HOVER = "#e8e8ed"
 
-    SUMMARY_BG      = "#f7f7f7"
-    SUMMARY_BORDER  = "#e2e2e2"
-    SUMMARY_TEXT    = "#222222"
-    SUMMARY_HEADING = "#111111"
+    CHART_CLR     = "#1d1d1f"
 
-    TAG_BG          = "#e8e8e8"
-    TAG_TEXT         = "#111111"
+    CARD_BG       = "#f5f5f7"
+    CARD_BR       = "#e8e8ed"
+    CARD_LABEL    = "#86868b"
+    CARD_VALUE    = "#1d1d1f"
 
-    DROPDOWN_BG     = "#ffffff"
-    DROPDOWN_HOVER  = "#f0f0f0"
-    DROPDOWN_TEXT   = "#111111"
+    SUMMARY_BG    = "#f5f5f7"
+    SUMMARY_BR    = "#e8e8ed"
+    SUMMARY_TX    = "#1d1d1f"
+    SUMMARY_H     = "#1d1d1f"
 
-    # Sidebar (always dark)
-    SB_BG           = "#0a0a0a"
-    SB_TEXT         = "#e8e8e8"
-    SB_LABEL        = "#aaaaaa"
-    SB_INPUT_BG     = "#161616"
-    SB_INPUT_BORDER = "#2a2a2a"
-    SB_INPUT_TEXT   = "#e8e8e8"
-    SB_PLACEHOLDER  = "#555555"
-    SB_DIVIDER      = "#222222"
+    SB_BG         = "#000000"
+
+
+# Sidebar is always dark
+SB_TX         = "#f5f5f7"
+SB_LABEL      = "#86868b"
+SB_INPUT_BG   = "#1a1a1a"
+SB_INPUT_BR   = "#333333"
+SB_INPUT_TX   = "#f5f5f7"
+SB_PH         = "#555555"
+SB_DIV        = "#222222"
+SB_TAG_BG     = "rgba(255,255,255,0.1)"
 
 
 # ══════════════════════════════════════════════════════════════
@@ -146,22 +156,36 @@ else:
 st.markdown(f"""
 <style>
 
-/* ─────────────────────────────────────────────────────────────
-   1. PAGE BACKGROUND & LAYOUT
-   ───────────────────────────────────────────────────────────── */
+/* =============================================================
+   FONTS
+   Apple uses SF Pro; we use the system font stack that includes
+   SF Pro on Mac and Segoe UI on Windows.
+   ============================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+*, *::before, *::after {{
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+                 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+}}
+
+
+/* =============================================================
+   1. PAGE
+   ============================================================= */
 
 .stApp {{
-    background: {PAGE_BG} !important;
+    background: {BG} !important;
 }}
 .block-container {{
-    padding: 2rem 3rem 2.5rem !important;
-    max-width: 1200px;
+    padding: 2.5rem 3.5rem 3rem !important;
+    max-width: 1120px;
 }}
 
 
-/* ─────────────────────────────────────────────────────────────
-   2. GLOBAL TEXT — every text element in main area
-   ───────────────────────────────────────────────────────────── */
+/* =============================================================
+   2. GLOBAL TEXT
+   ============================================================= */
 
 .stApp [data-testid="stMainBlockContainer"],
 .stApp [data-testid="stMainBlockContainer"] p,
@@ -176,18 +200,20 @@ st.markdown(f"""
 .stApp [data-testid="stCaptionContainer"],
 .stApp [data-testid="stCaptionContainer"] p,
 .stApp [data-testid="stText"] {{
-    color: {TEXT_PRIMARY} !important;
+    color: {TEXT_1} !important;
 }}
 
 
-/* ─────────────────────────────────────────────────────────────
-   3. MAIN AREA — LABELS (the #1 visibility issue)
-   Targets every label variant Streamlit generates.
-   ───────────────────────────────────────────────────────────── */
+/* =============================================================
+   3. LABELS — every single variant Streamlit generates
+   ============================================================= */
 
 .stApp [data-testid="stMainBlockContainer"] label,
 .stApp [data-testid="stMainBlockContainer"] label p,
 .stApp [data-testid="stMainBlockContainer"] label span,
+.stApp [data-testid="stMainBlockContainer"] [data-testid="stWidgetLabel"],
+.stApp [data-testid="stMainBlockContainer"] [data-testid="stWidgetLabel"] p,
+.stApp [data-testid="stMainBlockContainer"] [data-testid="stWidgetLabel"] span,
 .stApp [data-testid="stMainBlockContainer"] .stTextInput label,
 .stApp [data-testid="stMainBlockContainer"] .stTextInput label p,
 .stApp [data-testid="stMainBlockContainer"] .stNumberInput label,
@@ -200,81 +226,82 @@ st.markdown(f"""
 .stApp [data-testid="stMainBlockContainer"] .stCheckbox label span,
 .stApp [data-testid="stMainBlockContainer"] .stCheckbox label p,
 .stApp [data-testid="stMainBlockContainer"] .stRadio label,
-.stApp [data-testid="stMainBlockContainer"] .stRadio label p,
-.stApp [data-testid="stMainBlockContainer"] [data-testid="stWidgetLabel"],
-.stApp [data-testid="stMainBlockContainer"] [data-testid="stWidgetLabel"] p,
-.stApp [data-testid="stMainBlockContainer"] [data-testid="stWidgetLabel"] span {{
-    color: {LABEL_COLOR} !important;
+.stApp [data-testid="stMainBlockContainer"] .stRadio label p {{
+    color: {TEXT_2} !important;
 }}
 
 
-/* ─────────────────────────────────────────────────────────────
-   4. MAIN AREA — TEXT INPUTS & NUMBER INPUTS
-   ───────────────────────────────────────────────────────────── */
+/* =============================================================
+   4. INPUTS — text, number, textarea
+   ============================================================= */
 
 .stApp [data-testid="stMainBlockContainer"] .stTextInput input,
 .stApp [data-testid="stMainBlockContainer"] .stNumberInput input,
 .stApp [data-testid="stMainBlockContainer"] .stTextArea textarea {{
     background: {INPUT_BG} !important;
-    color: {INPUT_TEXT} !important;
-    border: 1px solid {INPUT_BORDER} !important;
-    border-radius: 8px !important;
-    caret-color: {INPUT_TEXT} !important;
+    color: {INPUT_TX} !important;
+    border: 1px solid {INPUT_BR} !important;
+    border-radius: 12px !important;
+    padding: 0.55rem 0.85rem !important;
+    font-size: 0.88rem !important;
+    caret-color: {INPUT_TX} !important;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }}
 .stApp [data-testid="stMainBlockContainer"] .stTextInput input:focus,
 .stApp [data-testid="stMainBlockContainer"] .stNumberInput input:focus,
 .stApp [data-testid="stMainBlockContainer"] .stTextArea textarea:focus {{
-    border-color: {BORDER_FOCUS} !important;
-    box-shadow: 0 0 0 1px {BORDER_FOCUS} !important;
+    border-color: {INPUT_FOCUS} !important;
+    box-shadow: 0 0 0 3px rgba(0,113,227,0.15) !important;
 }}
 .stApp [data-testid="stMainBlockContainer"] .stTextInput input::placeholder,
 .stApp [data-testid="stMainBlockContainer"] .stTextArea textarea::placeholder {{
-    color: {INPUT_PLACEHOLDER} !important;
+    color: {INPUT_PH} !important;
 }}
-
-/* Number input step buttons */
 .stApp [data-testid="stMainBlockContainer"] .stNumberInput button {{
-    color: {TEXT_PRIMARY} !important;
-    border-color: {INPUT_BORDER} !important;
+    color: {TEXT_2} !important;
+    border-color: {INPUT_BR} !important;
     background: {INPUT_BG} !important;
+    border-radius: 8px !important;
 }}
 
 
-/* ─────────────────────────────────────────────────────────────
-   5. MAIN AREA — SELECT / DROPDOWN
-   ───────────────────────────────────────────────────────────── */
+/* =============================================================
+   5. SELECT / DROPDOWN
+   ============================================================= */
 
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"],
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] > div {{
     background: {INPUT_BG} !important;
-    border-color: {INPUT_BORDER} !important;
+    border-color: {INPUT_BR} !important;
+    border-radius: 12px !important;
 }}
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] span,
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] [class*="singleValue"],
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] [class*="placeholder"],
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] input {{
-    color: {INPUT_TEXT} !important;
+    color: {INPUT_TX} !important;
 }}
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] svg {{
-    fill: {TEXT_SECONDARY} !important;
+    fill: {TEXT_3} !important;
 }}
 
-/* Multiselect tags / pills */
+/* Tags / pills */
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] {{
     background: {TAG_BG} !important;
     border: none !important;
+    border-radius: 8px !important;
 }}
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] span {{
-    color: {TAG_TEXT} !important;
+    color: {TAG_TX} !important;
 }}
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] svg {{
-    fill: {TAG_TEXT} !important;
+    fill: {TAG_TX} !important;
 }}
 
 
-/* ─────────────────────────────────────────────────────────────
-   6. DROPDOWN POPOVER / MENU (appears on click)
-   ───────────────────────────────────────────────────────────── */
+/* =============================================================
+   6. DROPDOWN POPOVER
+   ============================================================= */
 
 [data-baseweb="popover"],
 [data-baseweb="popover"] > div,
@@ -282,15 +309,18 @@ st.markdown(f"""
 [data-baseweb="menu"] ul,
 [data-baseweb="list"],
 [data-baseweb="list"] ul {{
-    background: {DROPDOWN_BG} !important;
-    background-color: {DROPDOWN_BG} !important;
-    border-color: {INPUT_BORDER} !important;
+    background: {DROP_BG} !important;
+    background-color: {DROP_BG} !important;
+    border-color: {INPUT_BR} !important;
+    border-radius: 12px !important;
+    overflow: hidden;
 }}
 [data-baseweb="popover"] li,
 [data-baseweb="menu"] li,
 [data-baseweb="list"] li {{
-    color: {DROPDOWN_TEXT} !important;
+    color: {DROP_TX} !important;
     background: transparent !important;
+    padding: 0.5rem 0.85rem !important;
 }}
 [data-baseweb="popover"] li:hover,
 [data-baseweb="menu"] li:hover,
@@ -298,65 +328,71 @@ st.markdown(f"""
 [data-baseweb="popover"] li[aria-selected="true"],
 [data-baseweb="menu"] li[aria-selected="true"],
 [data-baseweb="list"] li[aria-selected="true"] {{
-    background: {DROPDOWN_HOVER} !important;
+    background: {DROP_HOVER} !important;
 }}
-/* Dropdown option text */
 [data-baseweb="popover"] li span,
 [data-baseweb="menu"] li span,
 [data-baseweb="list"] li span {{
-    color: {DROPDOWN_TEXT} !important;
+    color: {DROP_TX} !important;
 }}
 
 
-/* ─────────────────────────────────────────────────────────────
-   7. HELP TEXT & TOOLTIPS
-   ───────────────────────────────────────────────────────────── */
+/* =============================================================
+   7. HELP / TOOLTIP
+   ============================================================= */
 
 .stApp [data-testid="stMainBlockContainer"] .stTooltipIcon,
 .stApp [data-testid="stMainBlockContainer"] .stTooltipIcon svg,
 .stApp [data-testid="stMainBlockContainer"] [data-testid="tooltipHoverTarget"],
 .stApp small {{
-    color: {TEXT_MUTED} !important;
-    fill: {TEXT_MUTED} !important;
+    color: {TEXT_3} !important;
+    fill: {TEXT_3} !important;
 }}
 
 
-/* ─────────────────────────────────────────────────────────────
-   8. METRIC CARDS
-   ───────────────────────────────────────────────────────────── */
+/* =============================================================
+   8. METRIC CARDS — Apple comparison-card style
+   ============================================================= */
 
 div[data-testid="stMetric"] {{
-    background: {SURFACE};
-    border: 1px solid {BORDER};
-    border-radius: 10px;
-    padding: 16px 20px;
+    background: {CARD_BG};
+    border: 1px solid {CARD_BR};
+    border-radius: 16px;
+    padding: 20px 24px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}}
+div[data-testid="stMetric"]:hover {{
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,{('0.25' if dark else '0.06')});
 }}
 div[data-testid="stMetric"] label,
 div[data-testid="stMetric"] label p {{
-    color: {METRIC_LABEL} !important;
-    font-size: 0.72rem !important;
+    color: {CARD_LABEL} !important;
+    font-size: 0.7rem !important;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     font-weight: 600 !important;
 }}
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
-    color: {METRIC_VALUE} !important;
+    color: {CARD_VALUE} !important;
     font-weight: 700 !important;
+    font-size: 1.6rem !important;
+    letter-spacing: -0.02em;
 }}
 
 
-/* ─────────────────────────────────────────────────────────────
-   9. SIDEBAR (always dark regardless of mode)
-   ───────────────────────────────────────────────────────────── */
+/* =============================================================
+   9. SIDEBAR — always dark, Apple nav-bar feel
+   ============================================================= */
 
 [data-testid="stSidebar"] {{
     background: {SB_BG} !important;
 }}
 [data-testid="stSidebar"] > div:first-child {{
-    padding: 2rem 1.5rem !important;
+    padding: 2.2rem 1.6rem !important;
 }}
 
-/* Sidebar: all text */
+/* Text */
 [data-testid="stSidebar"] p,
 [data-testid="stSidebar"] span,
 [data-testid="stSidebar"] div,
@@ -375,59 +411,67 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 [data-testid="stSidebar"] [data-testid="stWidgetLabel"] span,
 [data-testid="stSidebar"] .stCheckbox label,
 [data-testid="stSidebar"] .stCheckbox label span {{
-    color: {SB_TEXT} !important;
+    color: {SB_TX} !important;
 }}
 
-/* Sidebar: labels */
+/* Labels */
 [data-testid="stSidebar"] label,
 [data-testid="stSidebar"] label p {{
     font-weight: 600 !important;
-    font-size: 0.78rem !important;
+    font-size: 0.72rem !important;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     color: {SB_LABEL} !important;
-    margin-bottom: 2px !important;
 }}
 
-/* Sidebar: text inputs */
+/* Text inputs */
 [data-testid="stSidebar"] .stTextInput input,
 [data-testid="stSidebar"] .stNumberInput input {{
     background: {SB_INPUT_BG} !important;
-    border: 1px solid {SB_INPUT_BORDER} !important;
-    color: {SB_INPUT_TEXT} !important;
-    border-radius: 8px !important;
-    caret-color: {SB_INPUT_TEXT} !important;
+    border: 1px solid {SB_INPUT_BR} !important;
+    color: {SB_INPUT_TX} !important;
+    border-radius: 10px !important;
+    padding: 0.5rem 0.8rem !important;
+    font-size: 0.88rem !important;
+    caret-color: {SB_INPUT_TX} !important;
+    transition: border-color 0.2s;
+}}
+[data-testid="stSidebar"] .stTextInput input:focus,
+[data-testid="stSidebar"] .stNumberInput input:focus {{
+    border-color: #0071e3 !important;
+    box-shadow: 0 0 0 3px rgba(0,113,227,0.2) !important;
 }}
 [data-testid="stSidebar"] .stTextInput input::placeholder {{
-    color: {SB_PLACEHOLDER} !important;
+    color: {SB_PH} !important;
 }}
-
-/* Sidebar: number input buttons */
 [data-testid="stSidebar"] .stNumberInput button {{
-    color: {SB_TEXT} !important;
-    border-color: {SB_INPUT_BORDER} !important;
+    color: {SB_TX} !important;
+    border-color: {SB_INPUT_BR} !important;
     background: {SB_INPUT_BG} !important;
+    border-radius: 8px !important;
 }}
 
-/* Sidebar: selects */
+/* Selects */
 [data-testid="stSidebar"] [data-baseweb="select"],
 [data-testid="stSidebar"] [data-baseweb="select"] > div {{
     background: {SB_INPUT_BG} !important;
-    border-color: {SB_INPUT_BORDER} !important;
+    border-color: {SB_INPUT_BR} !important;
+    border-radius: 10px !important;
 }}
 [data-testid="stSidebar"] [data-baseweb="select"] span,
 [data-testid="stSidebar"] [data-baseweb="select"] [class*="singleValue"],
 [data-testid="stSidebar"] [data-baseweb="select"] [class*="placeholder"],
 [data-testid="stSidebar"] [data-baseweb="select"] input,
 [data-testid="stSidebar"] [data-baseweb="select"] svg {{
-    color: {SB_INPUT_TEXT} !important;
-    fill: {SB_INPUT_TEXT} !important;
+    color: {SB_INPUT_TX} !important;
+    fill: {SB_INPUT_TX} !important;
 }}
 
-/* Sidebar: multiselect pills */
+/* Multiselect tags */
 [data-testid="stSidebar"] [data-baseweb="tag"] {{
-    background: rgba(255,255,255,0.12) !important;
+    background: {SB_TAG_BG} !important;
     border: none !important;
+    border-radius: 8px !important;
 }}
 [data-testid="stSidebar"] [data-baseweb="tag"] span,
 [data-testid="stSidebar"] [data-baseweb="tag"] svg {{
@@ -435,216 +479,226 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
     fill: #ffffff !important;
 }}
 
-/* Sidebar: tooltips */
+/* Tooltips */
 [data-testid="stSidebar"] .stTooltipIcon,
 [data-testid="stSidebar"] .stTooltipIcon svg {{
-    color: rgba(255,255,255,0.35) !important;
-    fill: rgba(255,255,255,0.35) !important;
+    color: rgba(255,255,255,0.3) !important;
+    fill: rgba(255,255,255,0.3) !important;
 }}
 
-/* Sidebar: dividers */
+/* Dividers */
 [data-testid="stSidebar"] hr {{
-    border-color: {SB_DIVIDER} !important;
-    margin: 1.2rem 0 !important;
-}}
-
-/* Sidebar: checkbox */
-[data-testid="stSidebar"] .stCheckbox [data-testid="stCheckbox"] {{
-    color: {SB_TEXT} !important;
+    border-color: {SB_DIV} !important;
+    margin: 1.4rem 0 !important;
 }}
 
 
-/* ─────────────────────────────────────────────────────────────
-   10. SIDEBAR BUTTONS
-   ───────────────────────────────────────────────────────────── */
+/* =============================================================
+   10. SIDEBAR BUTTONS — pill-shaped, Apple CTA style
+   ============================================================= */
 
 [data-testid="stSidebar"] .stButton > button {{
-    background: #ffffff !important;
-    color: #0e0e0e !important;
+    background: #0071e3 !important;
+    color: #ffffff !important;
     border: none !important;
-    border-radius: 8px !important;
-    padding: 0.6rem 1.2rem !important;
-    font-weight: 700 !important;
-    font-size: 0.88rem !important;
-    transition: all 0.15s ease;
+    border-radius: 980px !important;
+    padding: 0.6rem 1.4rem !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    letter-spacing: 0.01em;
+    transition: all 0.2s ease;
 }}
 [data-testid="stSidebar"] .stButton > button:hover {{
-    background: #e0e0e0 !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(255,255,255,0.1);
+    background: #0077ed !important;
+    transform: scale(1.02);
+    box-shadow: 0 2px 12px rgba(0,113,227,0.35);
 }}
 
 
-/* ─────────────────────────────────────────────────────────────
-   11. MAIN AREA BUTTONS
-   ───────────────────────────────────────────────────────────── */
+/* =============================================================
+   11. MAIN BUTTONS
+   ============================================================= */
 
 .stApp [data-testid="stMainBlockContainer"] .stButton > button {{
-    background: {SURFACE} !important;
-    color: {TEXT_PRIMARY} !important;
-    border: 1px solid {BORDER} !important;
-    border-radius: 8px !important;
+    background: {BTN_SEC_BG} !important;
+    color: {BTN_SEC_TX} !important;
+    border: 1px solid {BTN_SEC_BR} !important;
+    border-radius: 980px !important;
     font-weight: 600 !important;
-    padding: 0.4rem 1rem !important;
+    padding: 0.45rem 1.1rem !important;
     font-size: 0.82rem !important;
     transition: all 0.15s ease;
 }}
 .stApp [data-testid="stMainBlockContainer"] .stButton > button:hover {{
-    background: {SURFACE_HOVER} !important;
-    border-color: {BORDER_FOCUS} !important;
-    transform: translateY(-1px);
+    background: {BTN_SEC_HOVER} !important;
+    transform: scale(1.02);
 }}
 
-/* Download buttons */
+/* Download — primary pill */
 .stDownloadButton > button {{
-    background: {ACCENT} !important;
-    color: {ACCENT_INV} !important;
+    background: {ACCENT_FILL} !important;
+    color: {ACCENT_TEXT} !important;
     border: none !important;
-    border-radius: 8px !important;
+    border-radius: 980px !important;
     font-weight: 600 !important;
-    padding: 0.5rem 1rem !important;
+    padding: 0.5rem 1.2rem !important;
     font-size: 0.85rem !important;
     transition: all 0.15s ease;
 }}
 .stDownloadButton > button:hover {{
     background: {ACCENT_HOVER} !important;
-    transform: translateY(-1px);
+    transform: scale(1.02);
 }}
 
 
-/* ─────────────────────────────────────────────────────────────
-   12. STATUS WIDGET, SPINNER, ALERTS
-   ───────────────────────────────────────────────────────────── */
+/* =============================================================
+   12. STATUS / SPINNER
+   ============================================================= */
 
 [data-testid="stStatusWidget"] {{
     background: {SURFACE} !important;
     border: 1px solid {BORDER} !important;
-    border-radius: 10px !important;
+    border-radius: 16px !important;
 }}
 [data-testid="stStatusWidget"] p,
 [data-testid="stStatusWidget"] span,
 [data-testid="stStatusWidget"] div {{
-    color: {TEXT_PRIMARY} !important;
+    color: {TEXT_1} !important;
 }}
 .stSpinner > div > span {{
-    color: {TEXT_SECONDARY} !important;
+    color: {TEXT_2} !important;
 }}
 
 
-/* ─────────────────────────────────────────────────────────────
-   13. DATAFRAME & TABLES
-   ───────────────────────────────────────────────────────────── */
+/* =============================================================
+   13. DATAFRAME
+   ============================================================= */
 
 [data-testid="stDataFrame"] {{
     border: 1px solid {BORDER};
-    border-radius: 10px;
+    border-radius: 16px;
     overflow: hidden;
 }}
 
 
-/* ─────────────────────────────────────────────────────────────
+/* =============================================================
    14. DIVIDERS
-   ───────────────────────────────────────────────────────────── */
+   ============================================================= */
 
 .stApp hr {{
-    border-color: {BORDER} !important;
+    border-color: {BORDER_SUB} !important;
 }}
 
 
-/* ─────────────────────────────────────────────────────────────
-   15. CUSTOM HTML ELEMENTS
-   ───────────────────────────────────────────────────────────── */
+/* =============================================================
+   15. CUSTOM HTML
+   ============================================================= */
 
 .app-header h1 {{
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    color: {TEXT_PRIMARY};
-    font-size: 1.7rem;
+    color: {TEXT_1};
+    font-size: 2.2rem;
     font-weight: 800;
     margin: 0;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
 }}
 .app-sub {{
-    color: {TEXT_MUTED};
-    font-size: 0.88rem;
-    margin-bottom: 1rem;
+    color: {TEXT_3};
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+    margin-bottom: 2rem;
+    font-weight: 400;
 }}
 .section-hdr {{
     font-weight: 700;
-    font-size: 0.95rem;
-    color: {TEXT_PRIMARY};
-    margin: 1.4rem 0 0.5rem;
+    font-size: 1.15rem;
+    color: {TEXT_1};
+    margin: 2rem 0 0.8rem;
+    letter-spacing: -0.02em;
 }}
 .empty-state {{
     text-align: center;
-    padding: 6rem 2rem;
+    padding: 8rem 2rem;
 }}
 .empty-state .icon {{
-    font-size: 2.4rem;
-    margin-bottom: 0.8rem;
-    color: {TEXT_MUTED};
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: {TEXT_3};
 }}
 .empty-state p {{
-    font-size: 0.95rem;
+    font-size: 1rem;
     max-width: 360px;
     margin: 0 auto;
-    line-height: 1.6;
-    color: {TEXT_MUTED};
+    line-height: 1.7;
+    color: {TEXT_3};
 }}
 .empty-state b {{
-    color: {TEXT_SECONDARY};
+    color: {TEXT_2};
 }}
 .file-meta {{
-    margin-top: 1rem;
-    font-size: 0.8rem;
-    color: {TEXT_MUTED};
+    margin-top: 0.8rem;
+    font-size: 0.78rem;
+    color: {TEXT_3};
     line-height: 1.5;
+    font-weight: 500;
 }}
 .file-meta b {{
-    color: {TEXT_SECONDARY};
+    color: {TEXT_2};
+    font-weight: 600;
 }}
 
-/* Summary card */
+/* Summary */
 .summary-card {{
     background: {SUMMARY_BG};
-    border: 1px solid {SUMMARY_BORDER};
-    border-radius: 10px;
-    padding: 1.5rem 1.8rem;
-    margin-top: 0.8rem;
-    line-height: 1.75;
-    font-size: 0.91rem;
-    color: {SUMMARY_TEXT};
+    border: 1px solid {SUMMARY_BR};
+    border-radius: 16px;
+    padding: 1.8rem 2rem;
+    margin-top: 1rem;
+    line-height: 1.8;
+    font-size: 0.9rem;
+    color: {SUMMARY_TX};
 }}
-.summary-card p {{ color: {SUMMARY_TEXT} !important; }}
-.summary-card li {{ color: {SUMMARY_TEXT} !important; margin-bottom: 0.2rem; }}
-.summary-card ul {{ padding-left: 1.2rem; margin: 0.3rem 0; }}
+.summary-card p {{ color: {SUMMARY_TX} !important; }}
+.summary-card li {{ color: {SUMMARY_TX} !important; margin-bottom: 0.25rem; }}
+.summary-card ul {{ padding-left: 1.2rem; margin: 0.3rem 0 0.8rem; }}
+.summary-card ol {{ padding-left: 1.2rem; margin: 0.3rem 0 0.8rem; }}
 .summary-card h1, .summary-card h2, .summary-card h3,
 .summary-card h4, .summary-card h5, .summary-card strong {{
-    color: {SUMMARY_HEADING} !important;
+    color: {SUMMARY_H} !important;
+}}
+.summary-card h2 {{
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 1.2rem 0 0.4rem;
+    letter-spacing: -0.01em;
+}}
+.summary-card h3 {{
+    font-size: 0.92rem;
+    font-weight: 700;
+    margin: 1rem 0 0.3rem;
 }}
 .summary-card h4 {{
-    margin: 1.1rem 0 0.3rem;
     font-size: 0.88rem;
     font-weight: 700;
+    margin: 1rem 0 0.3rem;
 }}
+.summary-card h2:first-child,
+.summary-card h3:first-child,
 .summary-card h4:first-child {{ margin-top: 0; }}
 
-
-/* ─────────────────────────────────────────────────────────────
-   16. EXPANDER
-   ───────────────────────────────────────────────────────────── */
-
+/* Expander */
 [data-testid="stExpander"] {{
     border-color: {BORDER} !important;
     background: {SURFACE} !important;
-    border-radius: 10px !important;
+    border-radius: 16px !important;
 }}
 [data-testid="stExpander"] summary,
 [data-testid="stExpander"] summary span,
 [data-testid="stExpander"] summary p {{
-    color: {TEXT_PRIMARY} !important;
+    color: {TEXT_1} !important;
 }}
 [data-testid="stExpander"] svg {{
-    fill: {TEXT_SECONDARY} !important;
+    fill: {TEXT_2} !important;
 }}
 
 </style>
@@ -654,7 +708,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 # ── Header ───────────────────────────────────────────────────
 st.markdown("""
 <div class="app-header">
-    <h1>Play Store Reviews Scraper</h1>
+    <h1>Play Store<br>Reviews Scraper.</h1>
 </div>
 <p class="app-sub">Pull, preview, and export Google Play reviews for any app.</p>
 """, unsafe_allow_html=True)
@@ -810,7 +864,7 @@ if df is not None and not df.empty:
     if "Rating" in df.columns:
         dist = df["Rating"].value_counts().reindex([1, 2, 3, 4, 5], fill_value=0)
         if st.session_state.chart_mode == "chart":
-            st.bar_chart(dist, color=CHART_COLOR, height=220)
+            st.bar_chart(dist, color=CHART_CLR, height=220)
         else:
             dist_df = pd.DataFrame({
                 "Rating": [f"{i} ★" for i in range(1, 6)],
@@ -927,10 +981,9 @@ if df is not None and not df.empty:
                 st.error(f"Summary generation failed: {e}")
 
     if st.session_state.summary_text:
-        # Convert markdown to HTML for proper rendering
-        try:
+        if HAS_MD:
             html_summary = md_lib.markdown(st.session_state.summary_text)
-        except Exception:
+        else:
             html_summary = st.session_state.summary_text
         st.markdown(
             f'<div class="summary-card">{html_summary}</div>',
