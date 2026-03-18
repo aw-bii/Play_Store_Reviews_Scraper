@@ -39,7 +39,6 @@ DEFAULT_COUNTRY_IDX = COUNTRY_NAMES.index("India") if "India" in COUNTRY_NAMES e
 
 st.set_page_config(
     page_title="Play Store Reviews Scraper",
-    page_icon="★",
     layout="wide",
     initial_sidebar_state="expanded",
 )
