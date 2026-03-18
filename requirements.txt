@@ -1,3 +1,5 @@
 streamlit
 google-play-scraper
 pandas
+openpyxl
+requests
