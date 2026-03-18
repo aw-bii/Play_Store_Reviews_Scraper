@@ -44,101 +44,69 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Session state ────────────────────────────────────────────
-for key, default in [
-    ("df", None), ("meta", {}),
-    ("summary_text", None),
-]:
+for key, default in [("df", None), ("meta", {}), ("summary_text", None)]:
     if key not in st.session_state:
         st.session_state[key] = default
 
 
 # ══════════════════════════════════════════════════════════════
-# BERTELSMANN DESIGN TOKENS
+# BERTELSMANN TOKENS
 # ══════════════════════════════════════════════════════════════
 
-BE_BLUE     = "#002d64"
-BE_BLUE_2   = "#afbed2"
-BE_BLUE_3   = "#8ca0b9"
-BE_BLUE_4   = "#6482a0"
-BE_BLUE_5   = "#415f8c"
-BE_GRAY     = "#464646"
-BE_GRAY_2   = "#dcdcdc"
-BE_GRAY_3   = "#cdcdcd"
-BE_GRAY_4   = "#a0a0a0"
-BE_GRAY_5   = "#646464"
-BE_RED      = "#e60028"
-BE_RED_2    = "#eb5a50"
+BE_BLUE   = "#002d64"
+BE_BLUE_2 = "#afbed2"
+BE_BLUE_5 = "#415f8c"
+BE_GRAY   = "#464646"
+BE_GRAY_2 = "#dcdcdc"
+BE_GRAY_3 = "#cdcdcd"
+BE_GRAY_4 = "#a0a0a0"
+BE_GRAY_5 = "#646464"
+BE_RED    = "#e60028"
+BE_RED_2  = "#eb5a50"
 
-BG            = "#ffffff"
-SURFACE       = "#f5f6f8"
-BORDER        = BE_GRAY_2
-BORDER_SUB    = "#e8ecf0"
-TEXT_1        = BE_GRAY
-TEXT_2        = BE_GRAY_5
-TEXT_3        = BE_GRAY_4
-INPUT_BG      = "#ffffff"
-INPUT_BR      = BE_GRAY_3
-INPUT_TX      = BE_GRAY
-INPUT_PH      = BE_GRAY_4
-INPUT_FOCUS   = BE_BLUE
-TAG_BG        = BE_BLUE_2
-TAG_TX        = BE_BLUE
-DROP_BG       = "#ffffff"
-DROP_HOVER    = "#f5f6f8"
-DROP_TX       = BE_GRAY
-CARD_BG       = "#f5f6f8"
-CARD_BR       = "#e8ecf0"
-CARD_LABEL    = BE_GRAY_5
-CARD_VALUE    = BE_BLUE
-SUMMARY_BG    = "#f5f6f8"
-SUMMARY_BR    = "#e8ecf0"
-SUMMARY_TX    = BE_GRAY
-SUMMARY_H     = BE_BLUE
-SB_BG         = BE_BLUE
+BG = "#ffffff"; SURFACE = "#f5f6f8"; BORDER = BE_GRAY_2; BORDER_SUB = "#e8ecf0"
+TEXT_1 = BE_GRAY; TEXT_2 = BE_GRAY_5; TEXT_3 = BE_GRAY_4
+CARD_BG = "#f5f6f8"; CARD_BR = "#e8ecf0"; CARD_LABEL = BE_GRAY_5; CARD_VALUE = BE_BLUE
+SUMMARY_BG = "#f5f6f8"; SUMMARY_BR = "#e8ecf0"; SUMMARY_TX = BE_GRAY; SUMMARY_H = BE_BLUE
 
 
 # ══════════════════════════════════════════════════════════════
-# STYLESHEET
+# CSS
 # ══════════════════════════════════════════════════════════════
 st.markdown(f"""
 <style>
 
-/* === FONTS — Arial (Bertelsmann screen) === */
 *, *::before, *::after {{
     font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif !important;
 }}
 
-/* === PAGE === */
 .stApp {{ background: {BG} !important; }}
-.block-container {{ padding: 2.5rem 3.5rem 3rem !important; max-width: 1120px; }}
+.block-container {{ padding: 2.5rem 3rem 3rem !important; max-width: 1100px; }}
 
-/* === FIXED SIDEBAR === */
+/* ── Sidebar: fixed, 1/3 screen ────────────────────────────── */
 [data-testid="stSidebar"] {{
-    background: {SB_BG} !important;
-    min-width: 320px !important; max-width: 320px !important;
-    transform: none !important; transition: none !important;
+    background: {BE_BLUE} !important;
+    min-width: 33.33vw !important;
+    max-width: 33.33vw !important;
+    transform: none !important;
+    transition: none !important;
 }}
-[data-testid="stSidebar"] > div:first-child {{ padding: 2.2rem 1.6rem !important; }}
+[data-testid="stSidebar"] > div:first-child {{
+    padding: 2.2rem 2rem !important;
+}}
 
-/* Hide ALL collapse controls */
+/* Hide every collapse / hamburger control */
 button[data-testid="stSidebarCollapseButton"],
 [data-testid="collapsedControl"],
 [data-testid="stSidebarCollapsedControl"],
 [data-testid="stSidebarNav"],
-.stApp button[kind="headerNoPadding"],
-.stApp [data-testid="stHeader"] button {{
+[data-testid="stHeader"] {{
     display: none !important; visibility: hidden !important;
     width: 0 !important; height: 0 !important;
-    overflow: hidden !important; position: absolute !important;
-    pointer-events: none !important;
-}}
-/* Also hide the top-left hamburger on mobile */
-[data-testid="stHeader"] {{
-    display: none !important;
+    position: absolute !important; pointer-events: none !important;
 }}
 
-/* === GLOBAL TEXT === */
+/* ── Global text ───────────────────────────────────────────── */
 .stApp [data-testid="stMainBlockContainer"],
 .stApp [data-testid="stMainBlockContainer"] p,
 .stApp [data-testid="stMainBlockContainer"] span,
@@ -155,89 +123,87 @@ button[data-testid="stSidebarCollapseButton"],
     color: {TEXT_1} !important;
 }}
 
-/* === LABELS — no uppercase === */
+/* ── Labels (no caps) ──────────────────────────────────────── */
 .stApp [data-testid="stMainBlockContainer"] label,
 .stApp [data-testid="stMainBlockContainer"] label p,
 .stApp [data-testid="stMainBlockContainer"] label span,
 .stApp [data-testid="stMainBlockContainer"] [data-testid="stWidgetLabel"],
 .stApp [data-testid="stMainBlockContainer"] [data-testid="stWidgetLabel"] p,
 .stApp [data-testid="stMainBlockContainer"] [data-testid="stWidgetLabel"] span,
-.stApp [data-testid="stMainBlockContainer"] .stCheckbox label span,
-.stApp [data-testid="stMainBlockContainer"] .stCheckbox label p {{
-    color: {TEXT_2} !important;
-    text-transform: none !important;
+.stApp [data-testid="stMainBlockContainer"] .stCheckbox label span {{
+    color: {TEXT_2} !important; text-transform: none !important;
 }}
 
-/* === INPUTS (main) === */
+/* ── Inputs (main area) ────────────────────────────────────── */
 .stApp [data-testid="stMainBlockContainer"] .stTextInput input,
 .stApp [data-testid="stMainBlockContainer"] .stNumberInput input,
 .stApp [data-testid="stMainBlockContainer"] .stTextArea textarea {{
-    background: {INPUT_BG} !important; color: {INPUT_TX} !important;
-    border: 1px solid {INPUT_BR} !important; border-radius: 4px !important;
+    background: #ffffff !important; color: {BE_GRAY} !important;
+    border: 1px solid {BE_GRAY_3} !important; border-radius: 4px !important;
     padding: 0.5rem 0.75rem !important; font-size: 0.88rem !important;
 }}
 .stApp [data-testid="stMainBlockContainer"] .stTextInput input:focus,
 .stApp [data-testid="stMainBlockContainer"] .stNumberInput input:focus {{
-    border-color: {INPUT_FOCUS} !important; box-shadow: 0 0 0 2px {INPUT_FOCUS}33 !important;
+    border-color: {BE_BLUE} !important; box-shadow: 0 0 0 2px rgba(0,45,100,0.12) !important;
 }}
-.stApp [data-testid="stMainBlockContainer"] .stTextInput input::placeholder {{ color: {INPUT_PH} !important; }}
+.stApp [data-testid="stMainBlockContainer"] .stTextInput input::placeholder {{
+    color: {BE_GRAY_4} !important;
+}}
 .stApp [data-testid="stMainBlockContainer"] .stNumberInput button {{
-    color: {TEXT_2} !important; border-color: {INPUT_BR} !important; background: {INPUT_BG} !important;
+    color: {TEXT_2} !important; border-color: {BE_GRAY_3} !important; background: #fff !important;
 }}
 
-/* === SELECT (main) === */
+/* ── Select (main) ─────────────────────────────────────────── */
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"],
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] > div {{
-    background: {INPUT_BG} !important; border-color: {INPUT_BR} !important; border-radius: 4px !important;
+    background: #fff !important; border-color: {BE_GRAY_3} !important; border-radius: 4px !important;
 }}
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] span,
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] [class*="singleValue"],
-.stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] [class*="placeholder"],
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] input {{
-    color: {INPUT_TX} !important;
+    color: {BE_GRAY} !important;
 }}
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] svg {{ fill: {TEXT_3} !important; }}
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] {{
-    background: {TAG_BG} !important; border: none !important; border-radius: 3px !important;
+    background: {BE_BLUE_2} !important; border: none !important; border-radius: 3px !important;
 }}
-.stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] span {{ color: {TAG_TX} !important; }}
-.stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] svg {{ fill: {TAG_TX} !important; }}
+.stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] span {{ color: {BE_BLUE} !important; }}
+.stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] svg {{ fill: {BE_BLUE} !important; }}
 
-/* === DROPDOWN POPOVER === */
+/* ── Dropdown popover ──────────────────────────────────────── */
 [data-baseweb="popover"], [data-baseweb="popover"] > div,
 [data-baseweb="menu"], [data-baseweb="menu"] ul,
 [data-baseweb="list"], [data-baseweb="list"] ul {{
-    background: {DROP_BG} !important; border-color: {INPUT_BR} !important; border-radius: 4px !important;
+    background: #fff !important; border-color: {BE_GRAY_3} !important; border-radius: 4px !important;
 }}
 [data-baseweb="popover"] li, [data-baseweb="menu"] li, [data-baseweb="list"] li {{
-    color: {DROP_TX} !important; background: transparent !important; padding: 0.45rem 0.75rem !important;
+    color: {BE_GRAY} !important; background: transparent !important;
 }}
 [data-baseweb="popover"] li:hover, [data-baseweb="menu"] li:hover,
-[data-baseweb="popover"] li[aria-selected="true"], [data-baseweb="menu"] li[aria-selected="true"] {{
-    background: {DROP_HOVER} !important;
+[data-baseweb="popover"] li[aria-selected="true"] {{
+    background: #f5f6f8 !important;
 }}
-[data-baseweb="popover"] li span, [data-baseweb="menu"] li span {{ color: {DROP_TX} !important; }}
+[data-baseweb="popover"] li span, [data-baseweb="menu"] li span {{ color: {BE_GRAY} !important; }}
 
-/* === TOOLTIPS === */
+/* ── Tooltip ───────────────────────────────────────────────── */
 .stApp [data-testid="stMainBlockContainer"] .stTooltipIcon,
 .stApp [data-testid="stMainBlockContainer"] .stTooltipIcon svg,
 .stApp small {{ color: {TEXT_3} !important; fill: {TEXT_3} !important; }}
 
-/* === METRIC CARDS === */
+/* ── Metric cards ──────────────────────────────────────────── */
 div[data-testid="stMetric"] {{
     background: {CARD_BG}; border: 1px solid {CARD_BR}; border-radius: 4px; padding: 18px 22px;
 }}
 div[data-testid="stMetric"]:hover {{ box-shadow: 0 2px 12px rgba(0,45,100,0.05); }}
 div[data-testid="stMetric"] label, div[data-testid="stMetric"] label p {{
     color: {CARD_LABEL} !important; font-size: 0.72rem !important;
-    letter-spacing: 0.04em; font-weight: 600 !important;
-    text-transform: none !important;
+    letter-spacing: 0.03em; font-weight: 600 !important; text-transform: none !important;
 }}
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
     color: {CARD_VALUE} !important; font-weight: 700 !important; font-size: 1.5rem !important;
 }}
 
-/* === SIDEBAR TEXT & INPUTS === */
+/* ── Sidebar: all text ─────────────────────────────────────── */
 [data-testid="stSidebar"] p, [data-testid="stSidebar"] span,
 [data-testid="stSidebar"] div, [data-testid="stSidebar"] li,
 [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
@@ -245,7 +211,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 [data-testid="stSidebar"] label, [data-testid="stSidebar"] label p,
 [data-testid="stSidebar"] label span,
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
-[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p,
 [data-testid="stSidebar"] [data-testid="stWidgetLabel"],
 [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
 [data-testid="stSidebar"] [data-testid="stWidgetLabel"] span,
@@ -255,39 +220,41 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 }}
 [data-testid="stSidebar"] label, [data-testid="stSidebar"] label p {{
     font-weight: 600 !important; font-size: 0.75rem !important;
-    letter-spacing: 0.04em;
-    color: {BE_BLUE_2} !important;
+    letter-spacing: 0.03em; color: {BE_BLUE_2} !important;
     text-transform: none !important;
 }}
 
-/* Sidebar inputs — white text on semi-transparent bg */
+/* Sidebar: inputs — HIGH CONTRAST white text */
 [data-testid="stSidebar"] .stTextInput input,
 [data-testid="stSidebar"] .stNumberInput input {{
-    background: rgba(255,255,255,0.12) !important;
-    border: 1px solid rgba(255,255,255,0.22) !important;
+    background: rgba(0,0,0,0.25) !important;
+    border: 1px solid rgba(255,255,255,0.25) !important;
     color: #ffffff !important;
     border-radius: 4px !important;
-    padding: 0.5rem 0.75rem !important; font-size: 0.88rem !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.88rem !important;
     caret-color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
 }}
 [data-testid="stSidebar"] .stTextInput input:focus,
 [data-testid="stSidebar"] .stNumberInput input:focus {{
     border-color: {BE_BLUE_2} !important;
-    box-shadow: 0 0 0 2px rgba(175,190,210,0.25) !important;
+    box-shadow: 0 0 0 2px rgba(175,190,210,0.3) !important;
 }}
 [data-testid="stSidebar"] .stTextInput input::placeholder {{
-    color: rgba(175,190,210,0.6) !important;
+    color: rgba(175,190,210,0.7) !important;
+    -webkit-text-fill-color: rgba(175,190,210,0.7) !important;
 }}
 [data-testid="stSidebar"] .stNumberInput button {{
-    color: #ffffff !important; border-color: rgba(255,255,255,0.22) !important;
-    background: rgba(255,255,255,0.12) !important; border-radius: 3px !important;
+    color: #ffffff !important; border-color: rgba(255,255,255,0.25) !important;
+    background: rgba(0,0,0,0.25) !important;
 }}
 
-/* Sidebar selects */
+/* Sidebar: selects */
 [data-testid="stSidebar"] [data-baseweb="select"],
 [data-testid="stSidebar"] [data-baseweb="select"] > div {{
-    background: rgba(255,255,255,0.12) !important;
-    border-color: rgba(255,255,255,0.22) !important;
+    background: rgba(0,0,0,0.25) !important;
+    border-color: rgba(255,255,255,0.25) !important;
     border-radius: 4px !important;
 }}
 [data-testid="stSidebar"] [data-baseweb="select"] span,
@@ -296,9 +263,10 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 [data-testid="stSidebar"] [data-baseweb="select"] input,
 [data-testid="stSidebar"] [data-baseweb="select"] svg {{
     color: #ffffff !important; fill: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
 }}
 [data-testid="stSidebar"] [data-baseweb="tag"] {{
-    background: rgba(255,255,255,0.15) !important; border: none !important; border-radius: 3px !important;
+    background: rgba(255,255,255,0.15) !important; border: none !important;
 }}
 [data-testid="stSidebar"] [data-baseweb="tag"] span,
 [data-testid="stSidebar"] [data-baseweb="tag"] svg {{ color: #fff !important; fill: #fff !important; }}
@@ -306,28 +274,24 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 [data-testid="stSidebar"] .stTooltipIcon svg {{ color: rgba(255,255,255,0.35) !important; fill: rgba(255,255,255,0.35) !important; }}
 [data-testid="stSidebar"] hr {{ border-color: rgba(255,255,255,0.12) !important; margin: 1.4rem 0 !important; }}
 
-/* Sidebar checkbox alignment fix */
-[data-testid="stSidebar"] .stCheckbox {{
-    display: flex !important; align-items: center !important;
-}}
+/* Sidebar: checkbox alignment */
 [data-testid="stSidebar"] .stCheckbox > label {{
     display: flex !important; align-items: center !important; gap: 0.5rem !important;
 }}
 
-/* === SIDEBAR BUTTON — Be Red CTA === */
+/* ── Sidebar CTA — Be Red pill ─────────────────────────────── */
 [data-testid="stSidebar"] .stButton > button {{
     background: {BE_RED} !important; color: #ffffff !important;
     border: none !important; border-radius: 980px !important;
     padding: 0.6rem 1.4rem !important; font-weight: 700 !important;
-    font-size: 0.85rem !important; letter-spacing: 0.02em;
-    text-transform: none !important;
+    font-size: 0.85rem !important; text-transform: none !important;
     transition: all 0.15s ease;
 }}
 [data-testid="stSidebar"] .stButton > button:hover {{
     background: {BE_RED_2} !important; box-shadow: 0 2px 10px rgba(230,0,40,0.3);
 }}
 
-/* === MAIN BUTTONS — generic secondary === */
+/* ── Main generic buttons ──────────────────────────────────── */
 .stApp [data-testid="stMainBlockContainer"] .stButton > button {{
     background: {SURFACE} !important; color: {TEXT_1} !important;
     border: 1px solid {BE_GRAY_3} !important; border-radius: 4px !important;
@@ -338,7 +302,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
     background: {BE_GRAY_2} !important;
 }}
 
-/* === DOWNLOAD + SUMMARY BUTTONS — Be Blue pill === */
+/* ── Download + Summary — Be Blue pill ─────────────────────── */
 .stDownloadButton > button,
 .stDownloadButton button[kind="primary"],
 .stDownloadButton button[kind="secondary"],
@@ -347,7 +311,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 .blue-pill .stButton > button {{
     background: {BE_BLUE} !important; color: #ffffff !important;
     border: none !important; border-radius: 980px !important;
-    font-weight: 600 !important; padding: 0.5rem 1.2rem !important;
+    font-weight: 600 !important; padding: 0.5rem 1.3rem !important;
     font-size: 0.85rem !important; text-transform: none !important;
     transition: all 0.15s ease;
 }}
@@ -358,45 +322,32 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
     background: {BE_BLUE_5} !important;
     box-shadow: 0 2px 10px rgba(0,45,100,0.2);
 }}
-
-/* === STATUS — fixed, no collapse === */
-[data-testid="stStatusWidget"] {{
-    background: {SURFACE} !important; border: 1px solid {BORDER} !important;
-    border-radius: 4px !important; transition: none !important;
+/* Icon color inside blue pill buttons */
+.stDownloadButton > button svg, .stDownloadButton > button svg path,
+.blue-pill .stButton > button svg, .blue-pill .stButton > button svg path {{
+    fill: #ffffff !important; color: #ffffff !important;
 }}
-[data-testid="stStatusWidget"] * {{ transition: none !important; animation: none !important; }}
-[data-testid="stStatusWidget"] p, [data-testid="stStatusWidget"] span,
-[data-testid="stStatusWidget"] div {{ color: {TEXT_1} !important; }}
-[data-testid="stStatusWidget"] summary {{ pointer-events: none !important; cursor: default !important; }}
-[data-testid="stStatusWidget"] summary svg {{ display: none !important; }}
-.stSpinner > div > span {{ color: {TEXT_2} !important; }}
 
-/* === DATAFRAME === */
+/* ── Status — removed, but just in case ────────────────────── */
+[data-testid="stStatusWidget"] {{ display: none !important; }}
+
+/* ── Dataframe ─────────────────────────────────────────────── */
 [data-testid="stDataFrame"] {{ border: 1px solid {BORDER}; border-radius: 4px; overflow: hidden; }}
 
-/* === DIVIDERS === */
+/* ── Dividers ──────────────────────────────────────────────── */
 .stApp hr {{ border-color: {BORDER_SUB} !important; }}
 
-/* === SVG ICONS === */
-.stApp [data-testid="stMainBlockContainer"] svg {{ fill: {TEXT_2} !important; color: {TEXT_2} !important; }}
+/* ── SVG icons ─────────────────────────────────────────────── */
+.stApp [data-testid="stMainBlockContainer"] svg {{ fill: {TEXT_2} !important; }}
 .stApp [data-testid="stMainBlockContainer"] svg path {{ fill: {TEXT_2} !important; }}
-[data-testid="stSidebar"] svg, [data-testid="stSidebar"] svg path {{ fill: #ffffff !important; color: #ffffff !important; }}
+[data-testid="stSidebar"] svg, [data-testid="stSidebar"] svg path {{ fill: #ffffff !important; }}
 .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] svg path {{ fill: {TEXT_3} !important; }}
 [data-testid="stSidebar"] [data-baseweb="select"] svg path {{ fill: #ffffff !important; }}
 .stApp [data-testid="stMainBlockContainer"] .stNumberInput button svg path {{ fill: {TEXT_2} !important; }}
 [data-testid="stSidebar"] .stNumberInput button svg path {{ fill: #ffffff !important; }}
-.stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] svg path {{ fill: {TAG_TX} !important; }}
-[data-testid="stStatusWidget"] svg path {{ fill: {TEXT_2} !important; }}
+.stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] svg path {{ fill: {BE_BLUE} !important; }}
 
-/* Blue pill button icon override */
-.blue-pill .stButton > button svg, .blue-pill .stButton > button svg path {{
-    fill: #ffffff !important; color: #ffffff !important;
-}}
-.stDownloadButton > button svg, .stDownloadButton > button svg path {{
-    fill: #ffffff !important; color: #ffffff !important;
-}}
-
-/* === CUSTOM HTML === */
+/* ── Custom HTML ───────────────────────────────────────────── */
 .app-header h1 {{
     color: {BE_BLUE}; font-size: 2rem; font-weight: 700; margin: 0;
     letter-spacing: -0.02em; line-height: 1.15;
@@ -406,14 +357,27 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 }}
 .section-hdr {{
     font-weight: 700; font-size: 1.05rem; color: {BE_BLUE};
-    margin: 2rem 0 0.7rem; letter-spacing: -0.01em;
+    margin: 2rem 0 0.7rem;
 }}
 .empty-state {{ text-align: center; padding: 8rem 2rem; }}
 .empty-state .icon {{ font-size: 2.4rem; margin-bottom: 1rem; color: {TEXT_3}; }}
 .empty-state p {{ font-size: 0.95rem; max-width: 360px; margin: 0 auto; line-height: 1.7; color: {TEXT_3}; }}
 .empty-state b {{ color: {TEXT_2}; }}
-.file-meta {{ margin-top: 0.8rem; font-size: 0.78rem; color: {TEXT_3}; font-weight: 500; }}
-.file-meta b {{ color: {TEXT_2}; font-weight: 600; }}
+
+/* Export meta row */
+.export-meta {{
+    display: flex; align-items: center; gap: 1.5rem;
+    margin-top: 0.8rem; flex-wrap: wrap;
+}}
+.export-meta .stat {{
+    font-size: 0.82rem; color: {TEXT_3};
+}}
+.export-meta .stat b {{
+    color: {TEXT_1}; font-weight: 700; font-size: 0.95rem;
+}}
+.export-meta .stat span {{
+    display: block; font-size: 0.7rem; color: {TEXT_3}; margin-top: 1px;
+}}
 
 /* Summary card */
 .summary-card {{
@@ -429,11 +393,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
 .summary-card h3 {{ font-size: 0.9rem; font-weight: 700; margin: 0.8rem 0 0.3rem; }}
 .summary-card h4 {{ font-size: 0.85rem; font-weight: 700; margin: 0.8rem 0 0.3rem; }}
 .summary-card h2:first-child, .summary-card h3:first-child, .summary-card h4:first-child {{ margin-top: 0; }}
-
-/* Expander */
-[data-testid="stExpander"] {{ border-color: {BORDER} !important; background: {SURFACE} !important; border-radius: 4px !important; }}
-[data-testid="stExpander"] summary, [data-testid="stExpander"] summary span {{ color: {TEXT_1} !important; }}
-[data-testid="stExpander"] svg {{ fill: {TEXT_2} !important; }}
 
 </style>
 """, unsafe_allow_html=True)
@@ -454,63 +413,66 @@ with st.sidebar:
     st.divider()
 
     app_id = st.text_input(
-        "App id", placeholder="com.example.app",
+        "App ID", placeholder="com.example.app",
         help="From the Play Store URL: play.google.com/store/apps/details?id=com.example.app",
     )
 
-    col_a, col_b = st.columns(2)
-    with col_a:
-        country_name = st.selectbox("Country", options=COUNTRY_NAMES, index=DEFAULT_COUNTRY_IDX)
-    with col_b:
-        count = st.number_input("Reviews", min_value=1, max_value=10000, value=200, step=50)
-
+    country_name = st.selectbox("Country", options=COUNTRY_NAMES, index=DEFAULT_COUNTRY_IDX)
     country_code = COUNTRIES.get(country_name, "in")
+
+    count = st.number_input("Number of reviews", min_value=1, max_value=1000000, value=200, step=50)
 
     sort_order = st.selectbox("Sort by", ["Newest", "Most Relevant"])
     filter_score = st.multiselect("Star filter", options=[1, 2, 3, 4, 5], default=[], help="Leave empty for all ratings")
-    include_version = st.checkbox("Include app version column", value=False)
 
     st.divider()
     scrape = st.button("Start scraping", use_container_width=True)
 
 
-# ── Scraping ─────────────────────────────────────────────────
+# ── Scraping (no status widget) ──────────────────────────────
 SORT_MAP = {"Most Relevant": Sort.MOST_RELEVANT, "Newest": Sort.NEWEST}
 
 if scrape:
     if not app_id.strip():
-        st.error("Enter an App ID to continue."); st.stop()
+        st.error("Enter an App ID to continue.")
+        st.stop()
     st.session_state.summary_text = None
     sort_val = SORT_MAP[sort_order]
     filter_val = filter_score if filter_score else None
 
-    with st.status(f"Scraping {app_id}  ·  {country_name}  ·  {count} reviews", expanded=True) as status:
-        try:
-            all_reviews, batch_size, token = [], min(count, 200), None
-            while len(all_reviews) < count:
-                fetch_count = min(batch_size, count - len(all_reviews))
-                st.write(f"Fetching batch... ({len(all_reviews)}/{count})")
-                result, token = reviews(
-                    app_id, lang="en", country=country_code, sort=sort_val,
-                    count=fetch_count,
-                    filter_score_with=filter_val[0] if filter_val and len(filter_val) == 1 else None,
-                    continuation_token=token,
-                )
-                if not result: break
-                all_reviews.extend(result)
-                if token is None: break
-                time.sleep(0.3)
-            status.update(label=f"Done — {len(all_reviews)} reviews fetched", state="complete")
-        except Exception as e:
-            st.error(f"Scrape failed: {e}"); st.stop()
+    progress = st.progress(0, text="Starting scrape...")
+    try:
+        all_reviews, batch_size, token = [], min(count, 200), None
+        while len(all_reviews) < count:
+            fetch_count = min(batch_size, count - len(all_reviews))
+            result, token = reviews(
+                app_id, lang="en", country=country_code, sort=sort_val,
+                count=fetch_count,
+                filter_score_with=filter_val[0] if filter_val and len(filter_val) == 1 else None,
+                continuation_token=token,
+            )
+            if not result:
+                break
+            all_reviews.extend(result)
+            pct = min(len(all_reviews) / count, 1.0)
+            progress.progress(pct, text=f"Fetched {len(all_reviews):,} / {count:,} reviews")
+            if token is None:
+                break
+            time.sleep(0.3)
+        progress.empty()
+    except Exception as e:
+        progress.empty()
+        st.error(f"Scrape failed: {e}")
+        st.stop()
 
     if not all_reviews:
-        st.warning("No reviews found. Check the App ID and country."); st.stop()
+        st.warning("No reviews found. Check the App ID and country.")
+        st.stop()
 
     df = pd.DataFrame(all_reviews)
-    keep = [c for c in ["userName", "score", "content", "at", "reviewCreatedVersion"] if c in df.columns]
+    keep = [c for c in ["userName", "score", "content", "at"] if c in df.columns]
     df = df[keep]
-    df.rename(columns={"userName": "User", "score": "Rating", "content": "Review", "at": "Date", "reviewCreatedVersion": "App Version"}, inplace=True)
+    df.rename(columns={"userName": "User", "score": "Rating", "content": "Review", "at": "Date"}, inplace=True)
     if "Date" in df.columns:
         df["Date"] = pd.to_datetime(df["Date"]).dt.strftime("%Y-%m-%d %H:%M")
     if filter_val and len(filter_val) > 1:
@@ -527,17 +489,12 @@ df = st.session_state.df
 
 if df is not None and not df.empty:
     meta = st.session_state.meta
-    show_cols = ["User", "Rating", "Review", "Date"]
-    if include_version and "App Version" in df.columns:
-        show_cols.append("App Version")
-    display_df = df[[c for c in show_cols if c in df.columns]]
+    display_df = df[["User", "Rating", "Review", "Date"]] if all(c in df.columns for c in ["User", "Rating", "Review", "Date"]) else df
 
-    # ── 1. Metrics (with NPS instead of 1-star count) ────────
+    # ── 1. Metrics ───────────────────────────────────────────
     total = len(df)
     avg = df["Rating"].mean() if "Rating" in df.columns else 0
     five_star = int((df["Rating"] == 5).sum()) if "Rating" in df.columns else 0
-
-    # NPS: promoters = 5★, detractors = 1–3★
     if "Rating" in df.columns and total > 0:
         promoters = (df["Rating"] == 5).sum()
         detractors = (df["Rating"] <= 3).sum()
@@ -549,7 +506,7 @@ if df is not None and not df.empty:
     m1.metric("Total reviews", f"{total:,}")
     m2.metric("Avg rating", f"{avg:.2f} ★")
     m3.metric("5-star", f"{five_star:,}")
-    m4.metric("NPS", f"{nps:+d}", help="Net Promoter Score: Promoters (5★) minus Detractors (1–3★), as a percentage of total reviews")
+    m4.metric("NPS", f"{nps:+d}", help="Promoters (5★) minus Detractors (1–3★), as a % of total reviews")
 
     # ── 2. AI Summary ────────────────────────────────────────
     st.divider()
@@ -604,19 +561,33 @@ if df is not None and not df.empty:
     # ── 3. Export ────────────────────────────────────────────
     st.divider()
     st.markdown('<div class="section-hdr">Export</div>', unsafe_allow_html=True)
+
     fname_base = f"{meta.get('app_id', 'app')}_{meta.get('country', 'xx')}_{datetime.now().strftime('%Y%m%d_%H%M')}"
-    dl1, dl2, dl_meta = st.columns([0.15, 0.15, 0.7])
+    csv_data = display_df.to_csv(index=False).encode("utf-8")
+    buf = BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as w:
+        display_df.to_excel(w, index=False, sheet_name="Reviews")
+    xlsx_data = buf.getvalue()
+
+    file_size_kb = max(len(csv_data), len(xlsx_data)) / 1024
+    if file_size_kb >= 1024:
+        size_str = f"{file_size_kb / 1024:.1f} MB"
+    else:
+        size_str = f"{file_size_kb:.0f} KB"
+
+    st.markdown(f"""
+    <div class="export-meta">
+        <div class="stat"><b>{len(display_df):,}</b><span>rows</span></div>
+        <div class="stat"><b>{size_str}</b><span>file size</span></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    dl1, dl2, _ = st.columns([0.16, 0.16, 0.68])
     with dl1:
-        csv_data = display_df.to_csv(index=False).encode("utf-8")
         st.download_button("Download CSV", csv_data, f"{fname_base}.csv", "text/csv", use_container_width=True)
     with dl2:
-        buf = BytesIO()
-        with pd.ExcelWriter(buf, engine="openpyxl") as w:
-            display_df.to_excel(w, index=False, sheet_name="Reviews")
-        st.download_button("Download XLSX", buf.getvalue(), f"{fname_base}.xlsx",
+        st.download_button("Download XLSX", xlsx_data, f"{fname_base}.xlsx",
                            "application/vnd.openxmlformats-officedocument.spreadsheetml.xml", use_container_width=True)
-    with dl_meta:
-        st.markdown(f'<div class="file-meta"><b>{len(display_df):,}</b> rows  ·  <b>{len(display_df.columns)}</b> cols  ·  {len(csv_data)/1024:.0f} KB</div>', unsafe_allow_html=True)
 
     # ── 4. Reviews table ─────────────────────────────────────
     st.divider()
