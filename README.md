@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="https://biifund.com/images/bii-logo.svg" alt="BII" height="40">
-</p>
-
 <h1 align="center">Play Store Reviews Scraper</h1>
 
 <p align="center">
