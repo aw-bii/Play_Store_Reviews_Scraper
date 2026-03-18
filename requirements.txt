@@ -3,3 +3,4 @@ google-play-scraper
 pandas
 openpyxl
 requests
+markdown
