@@ -1,6 +1,6 @@
 """
 Google Play Store Reviews Scraper
-Run:  streamlit run app.py
+Run:  streamlit run play-store-scraper.py
 Deps: pip install streamlit google-play-scraper pandas openpyxl requests
 """
 
@@ -20,7 +20,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# ── Session state init ───────────────────────────────────────
+# ── Session state ────────────────────────────────────────────
 if "df" not in st.session_state:
     st.session_state.df = None
     st.session_state.meta = {}
@@ -31,90 +31,250 @@ if "summary_text" not in st.session_state:
 if "dark_mode" not in st.session_state:
     st.session_state.dark_mode = False
 
-# ── Theme tokens ─────────────────────────────────────────────
 dark = st.session_state.dark_mode
 
-t = {
-    "bg":           "#0e0e0e" if dark else "#ffffff",
-    "surface":      "#1a1a1a" if dark else "#fafafa",
-    "surface_br":   "#2a2a2a" if dark else "#e5e5e5",
-    "text":         "#e8e8e8" if dark else "#111111",
-    "text_sec":     "#888888" if dark else "#888888",
-    "text_muted":   "#666666" if dark else "#999999",
-    "sidebar_bg":   "#111111" if dark else "#111111",
-    "sidebar_text": "#f0f0f0" if dark else "#f0f0f0",
-    "input_bg":     "rgba(255,255,255,0.08)" if dark else "rgba(255,255,255,0.08)",
-    "input_br":     "rgba(255,255,255,0.15)" if dark else "rgba(255,255,255,0.15)",
-    "accent":       "#ffffff" if dark else "#111111",
-    "accent_inv":   "#111111" if dark else "#ffffff",
-    "chart_color":  "#888888" if dark else "#111111",
-    "card_shadow":  "none" if dark else "0 1px 3px rgba(0,0,0,0.04)",
-    "summary_bg":   "#1a1a1a" if dark else "#f7f7f7",
-    "summary_br":   "#2a2a2a" if dark else "#e8e8e8",
-    "summary_text": "#d4d4d4" if dark else "#222222",
-    "summary_h":    "#e8e8e8" if dark else "#111111",
-    "metric_label": "#777777" if dark else "#888888",
-    "metric_val":   "#e8e8e8" if dark else "#111111",
-    "divider":      "#2a2a2a" if dark else "#eeeeee",
-    "bar_label":    "#aaaaaa" if dark else "#555555",
-}
+# ── Theme tokens ─────────────────────────────────────────────
+if dark:
+    T_BG          = "#0e0e0e"
+    T_SURFACE     = "#1a1a1a"
+    T_BORDER      = "#2a2a2a"
+    T_TEXT        = "#e0e0e0"
+    T_TEXT_SEC    = "#aaaaaa"
+    T_TEXT_MUTED  = "#777777"
+    T_ACCENT      = "#ffffff"
+    T_ACCENT_INV  = "#111111"
+    T_CHART       = "#999999"
+    T_INPUT_BG    = "#1e1e1e"
+    T_INPUT_BR    = "#3a3a3a"
+    T_INPUT_TEXT  = "#e0e0e0"
+    T_LABEL       = "#bbbbbb"
+    T_PLACEHOLDER = "#666666"
+    T_HELP        = "#888888"
+    T_METRIC_LBL  = "#999999"
+    T_METRIC_VAL  = "#e0e0e0"
+    T_SUCCESS_BG  = "#1a2e1a"
+    T_SUCCESS_TX  = "#88cc88"
+    T_WARNING_BG  = "#2e2a1a"
+    T_WARNING_TX  = "#ccbb66"
+    T_ERROR_BG    = "#2e1a1a"
+    T_ERROR_TX    = "#cc6666"
+    T_SUMMARY_BG  = "#161616"
+    T_SUMMARY_BR  = "#2a2a2a"
+    T_SUMMARY_TX  = "#cccccc"
+    T_SUMMARY_H   = "#e0e0e0"
+    T_PILL_BG     = "#333333"
+    T_PILL_TX     = "#e0e0e0"
+else:
+    T_BG          = "#ffffff"
+    T_SURFACE     = "#f8f8f8"
+    T_BORDER      = "#e5e5e5"
+    T_TEXT        = "#111111"
+    T_TEXT_SEC    = "#555555"
+    T_TEXT_MUTED  = "#999999"
+    T_ACCENT      = "#111111"
+    T_ACCENT_INV  = "#ffffff"
+    T_CHART       = "#111111"
+    T_INPUT_BG    = "#ffffff"
+    T_INPUT_BR    = "#d0d0d0"
+    T_INPUT_TEXT  = "#111111"
+    T_LABEL       = "#333333"
+    T_PLACEHOLDER = "#aaaaaa"
+    T_HELP        = "#888888"
+    T_METRIC_LBL  = "#888888"
+    T_METRIC_VAL  = "#111111"
+    T_SUCCESS_BG  = "#eaf7ea"
+    T_SUCCESS_TX  = "#2e7d32"
+    T_WARNING_BG  = "#fff8e1"
+    T_WARNING_TX  = "#f57f17"
+    T_ERROR_BG    = "#fdecea"
+    T_ERROR_TX    = "#c62828"
+    T_SUMMARY_BG  = "#f7f7f7"
+    T_SUMMARY_BR  = "#e5e5e5"
+    T_SUMMARY_TX  = "#222222"
+    T_SUMMARY_H   = "#111111"
+    T_PILL_BG     = "#e8e8e8"
+    T_PILL_TX     = "#111111"
 
 # ── CSS ──────────────────────────────────────────────────────
 st.markdown(f"""
 <style>
-    /* ── Base ─────────────────────────────────────────────── */
+    /* ═══════════════════════════════════════════════════════
+       BASE & BACKGROUND
+       ═══════════════════════════════════════════════════════ */
     .stApp {{
-        background: {t['bg']} !important;
+        background: {T_BG} !important;
+        color: {T_TEXT} !important;
     }}
     .block-container {{
         padding: 2rem 3rem 2.5rem !important;
         max-width: 1200px;
     }}
 
-    /* ── Global text override for dark mode ────────────────── */
-    .stApp, .stApp p, .stApp span, .stApp div, .stApp label {{
-        color: {t['text']} !important;
-    }}
-    .stApp .stMarkdown p {{
-        color: {t['text']} !important;
+    /* ═══════════════════════════════════════════════════════
+       GLOBAL TEXT — catch-all for main area
+       ═══════════════════════════════════════════════════════ */
+    .stApp p,
+    .stApp span,
+    .stApp li,
+    .stApp td,
+    .stApp th,
+    .stApp label,
+    .stApp .stMarkdown,
+    .stApp .stMarkdown p,
+    .stApp .stText,
+    .stApp [data-testid="stText"],
+    .stApp [data-testid="stMarkdownContainer"],
+    .stApp [data-testid="stMarkdownContainer"] p,
+    .stApp [data-testid="stCaptionContainer"],
+    .stApp [data-testid="stCaptionContainer"] p {{
+        color: {T_TEXT} !important;
     }}
 
-    /* ── Sidebar ──────────────────────────────────────────── */
-    [data-testid="stSidebar"] {{
-        background: {t['sidebar_bg']} !important;
+    /* ═══════════════════════════════════════════════════════
+       MAIN AREA — labels, inputs, selects
+       ═══════════════════════════════════════════════════════ */
+    .stApp [data-testid="stMainBlockContainer"] label,
+    .stApp [data-testid="stMainBlockContainer"] .stTextInput label,
+    .stApp [data-testid="stMainBlockContainer"] .stNumberInput label,
+    .stApp [data-testid="stMainBlockContainer"] .stSelectbox label,
+    .stApp [data-testid="stMainBlockContainer"] .stMultiSelect label,
+    .stApp [data-testid="stMainBlockContainer"] .stCheckbox label,
+    .stApp [data-testid="stMainBlockContainer"] .stCheckbox label span,
+    .stApp [data-testid="stMainBlockContainer"] .stRadio label {{
+        color: {T_LABEL} !important;
     }}
-    [data-testid="stSidebar"] * {{
-        color: {t['sidebar_text']} !important;
+
+    .stApp [data-testid="stMainBlockContainer"] .stTextInput input,
+    .stApp [data-testid="stMainBlockContainer"] .stNumberInput input {{
+        background: {T_INPUT_BG} !important;
+        color: {T_INPUT_TEXT} !important;
+        border: 1px solid {T_INPUT_BR} !important;
+        border-radius: 8px !important;
+    }}
+    .stApp [data-testid="stMainBlockContainer"] .stTextInput input::placeholder {{
+        color: {T_PLACEHOLDER} !important;
+    }}
+
+    .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"],
+    .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] > div {{
+        background: {T_INPUT_BG} !important;
+        border-color: {T_INPUT_BR} !important;
+        color: {T_INPUT_TEXT} !important;
+    }}
+    .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] span,
+    .stApp [data-testid="stMainBlockContainer"] [data-baseweb="select"] div[class*="value"] {{
+        color: {T_INPUT_TEXT} !important;
+    }}
+
+    /* Multiselect pills */
+    .stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] {{
+        background: {T_PILL_BG} !important;
+    }}
+    .stApp [data-testid="stMainBlockContainer"] [data-baseweb="tag"] span {{
+        color: {T_PILL_TX} !important;
+    }}
+
+    /* Help text (? tooltips and captions) */
+    .stApp [data-testid="stMainBlockContainer"] .stTooltipIcon,
+    .stApp .stHelp,
+    .stApp small {{
+        color: {T_HELP} !important;
+    }}
+
+    /* ═══════════════════════════════════════════════════════
+       SIDEBAR — always dark
+       ═══════════════════════════════════════════════════════ */
+    [data-testid="stSidebar"] {{
+        background: #111111 !important;
     }}
     [data-testid="stSidebar"] > div:first-child {{
         padding: 2rem 1.5rem !important;
     }}
+
+    /* Sidebar: all text white */
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] span,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] li,
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] h4,
+    [data-testid="stSidebar"] .stMarkdown p,
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p,
+    [data-testid="stSidebar"] .stCheckbox label span {{
+        color: #f0f0f0 !important;
+    }}
+
+    /* Sidebar: labels */
     [data-testid="stSidebar"] label {{
         font-weight: 600 !important;
         font-size: 0.78rem !important;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        opacity: 0.7;
+        opacity: 0.75;
         margin-bottom: 2px !important;
     }}
+
+    /* Sidebar: inputs */
     [data-testid="stSidebar"] .stTextInput input,
-    [data-testid="stSidebar"] .stNumberInput input,
-    [data-testid="stSidebar"] .stSelectbox [data-baseweb="select"],
-    [data-testid="stSidebar"] .stMultiSelect [data-baseweb="select"] {{
-        background: {t['input_bg']} !important;
-        border: 1px solid {t['input_br']} !important;
-        color: #fff !important;
+    [data-testid="stSidebar"] .stNumberInput input {{
+        background: rgba(255,255,255,0.07) !important;
+        border: 1px solid rgba(255,255,255,0.18) !important;
+        color: #ffffff !important;
         border-radius: 8px !important;
     }}
     [data-testid="stSidebar"] .stTextInput input::placeholder {{
         color: rgba(255,255,255,0.35) !important;
     }}
+    /* Sidebar: number input buttons */
+    [data-testid="stSidebar"] .stNumberInput button {{
+        color: #ffffff !important;
+        border-color: rgba(255,255,255,0.18) !important;
+        background: rgba(255,255,255,0.07) !important;
+    }}
+
+    /* Sidebar: selects */
+    [data-testid="stSidebar"] [data-baseweb="select"],
+    [data-testid="stSidebar"] [data-baseweb="select"] > div {{
+        background: rgba(255,255,255,0.07) !important;
+        border-color: rgba(255,255,255,0.18) !important;
+    }}
+    [data-testid="stSidebar"] [data-baseweb="select"] span,
+    [data-testid="stSidebar"] [data-baseweb="select"] div[class*="value"],
+    [data-testid="stSidebar"] [data-baseweb="select"] svg {{
+        color: #ffffff !important;
+        fill: #ffffff !important;
+    }}
+
+    /* Sidebar: multiselect pills */
+    [data-testid="stSidebar"] [data-baseweb="tag"] {{
+        background: rgba(255,255,255,0.15) !important;
+    }}
+    [data-testid="stSidebar"] [data-baseweb="tag"] span {{
+        color: #ffffff !important;
+    }}
+
+    /* Sidebar: help text */
+    [data-testid="stSidebar"] .stTooltipIcon {{
+        color: rgba(255,255,255,0.4) !important;
+    }}
+
+    /* Sidebar: dividers */
     [data-testid="stSidebar"] hr {{
         border-color: rgba(255,255,255,0.1) !important;
         margin: 1.2rem 0 !important;
     }}
 
-    /* ── Sidebar primary button ────────────────────────────── */
+    /* Sidebar: checkbox */
+    [data-testid="stSidebar"] .stCheckbox label {{
+        color: #f0f0f0 !important;
+    }}
+
+    /* ═══════════════════════════════════════════════════════
+       SIDEBAR: PRIMARY BUTTON (always white-on-dark)
+       ═══════════════════════════════════════════════════════ */
     [data-testid="stSidebar"] .stButton > button {{
         background: #ffffff !important;
         color: #111111 !important;
@@ -122,20 +282,22 @@ st.markdown(f"""
         border-radius: 8px !important;
         padding: 0.6rem 1.2rem !important;
         font-weight: 700 !important;
-        font-size: 0.9rem !important;
+        font-size: 0.88rem !important;
         transition: all 0.15s ease;
     }}
     [data-testid="stSidebar"] .stButton > button:hover {{
         background: #e0e0e0 !important;
         transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(255,255,255,0.15);
+        box-shadow: 0 4px 14px rgba(255,255,255,0.12);
     }}
 
-    /* ── Main area buttons ────────────────────────────────── */
+    /* ═══════════════════════════════════════════════════════
+       MAIN AREA BUTTONS
+       ═══════════════════════════════════════════════════════ */
     .stApp [data-testid="stMainBlockContainer"] .stButton > button {{
-        background: {t['surface']} !important;
-        color: {t['text']} !important;
-        border: 1px solid {t['surface_br']} !important;
+        background: {T_SURFACE} !important;
+        color: {T_TEXT} !important;
+        border: 1px solid {T_BORDER} !important;
         border-radius: 8px !important;
         font-weight: 600 !important;
         padding: 0.4rem 1rem !important;
@@ -143,82 +305,100 @@ st.markdown(f"""
         transition: all 0.15s ease;
     }}
     .stApp [data-testid="stMainBlockContainer"] .stButton > button:hover {{
-        background: {t['surface_br']} !important;
+        background: {T_BORDER} !important;
         transform: translateY(-1px);
     }}
 
-    /* ── Download buttons ─────────────────────────────────── */
+    /* Download buttons */
     .stDownloadButton > button {{
-        background: {t['accent']} !important;
-        color: {t['accent_inv']} !important;
+        background: {T_ACCENT} !important;
+        color: {T_ACCENT_INV} !important;
         border: none !important;
         border-radius: 8px !important;
         font-weight: 600 !important;
         padding: 0.5rem 1rem !important;
         font-size: 0.85rem !important;
-        transition: all 0.15s ease;
     }}
     .stDownloadButton > button:hover {{
         opacity: 0.85;
         transform: translateY(-1px);
     }}
 
-    /* ── Metric cards ─────────────────────────────────────── */
+    /* ═══════════════════════════════════════════════════════
+       METRIC CARDS
+       ═══════════════════════════════════════════════════════ */
     div[data-testid="stMetric"] {{
-        background: {t['surface']};
-        border: 1px solid {t['surface_br']};
+        background: {T_SURFACE};
+        border: 1px solid {T_BORDER};
         border-radius: 10px;
         padding: 16px 20px;
-        box-shadow: {t['card_shadow']};
     }}
     div[data-testid="stMetric"] label {{
-        color: {t['metric_label']} !important;
+        color: {T_METRIC_LBL} !important;
         font-size: 0.72rem !important;
         text-transform: uppercase;
         letter-spacing: 0.06em;
         font-weight: 600 !important;
     }}
     div[data-testid="stMetric"] [data-testid="stMetricValue"] {{
-        color: {t['metric_val']} !important;
+        color: {T_METRIC_VAL} !important;
         font-weight: 700 !important;
     }}
 
-    /* ── Header ───────────────────────────────────────────── */
+    /* ═══════════════════════════════════════════════════════
+       STATUS / ALERTS
+       ═══════════════════════════════════════════════════════ */
+    [data-testid="stStatusWidget"] {{
+        background: {T_SURFACE} !important;
+        border-color: {T_BORDER} !important;
+        border-radius: 10px !important;
+    }}
+    [data-testid="stStatusWidget"] p,
+    [data-testid="stStatusWidget"] span {{
+        color: {T_TEXT} !important;
+    }}
+    .stAlert [data-testid="stNotification"] {{
+        border-radius: 8px !important;
+    }}
+
+    /* ═══════════════════════════════════════════════════════
+       DATAFRAME
+       ═══════════════════════════════════════════════════════ */
+    [data-testid="stDataFrame"] {{
+        border: 1px solid {T_BORDER};
+        border-radius: 10px;
+        overflow: hidden;
+    }}
+
+    /* ═══════════════════════════════════════════════════════
+       DIVIDERS
+       ═══════════════════════════════════════════════════════ */
+    .stApp hr {{
+        border-color: {T_BORDER} !important;
+    }}
+
+    /* ═══════════════════════════════════════════════════════
+       CUSTOM ELEMENTS
+       ═══════════════════════════════════════════════════════ */
     .app-header h1 {{
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        color: {t['text']};
+        color: {T_TEXT};
         font-size: 1.7rem;
         font-weight: 800;
         margin: 0;
         letter-spacing: -0.02em;
     }}
     .app-sub {{
-        color: {t['text_muted']};
+        color: {T_TEXT_MUTED};
         font-size: 0.88rem;
         margin-bottom: 1rem;
     }}
-
-    /* ── Section headers ──────────────────────────────────── */
     .section-hdr {{
         font-weight: 700;
         font-size: 0.95rem;
-        color: {t['text']};
+        color: {T_TEXT};
         margin: 1.4rem 0 0.5rem;
     }}
-
-    /* ── Dataframe ────────────────────────────────────────── */
-    [data-testid="stDataFrame"] {{
-        border: 1px solid {t['surface_br']};
-        border-radius: 10px;
-        overflow: hidden;
-    }}
-
-    /* ── Divider ──────────────────────────────────────────── */
-    .stApp hr {{
-        border-color: {t['divider']} !important;
-    }}
-
-    /* ── Empty state ──────────────────────────────────────── */
     .empty-state {{
         text-align: center;
         padding: 6rem 2rem;
@@ -226,63 +406,82 @@ st.markdown(f"""
     .empty-state .icon {{
         font-size: 2.4rem;
         margin-bottom: 0.8rem;
-        color: {t['text_muted']};
+        color: {T_TEXT_MUTED};
     }}
     .empty-state p {{
         font-size: 0.95rem;
         max-width: 360px;
         margin: 0 auto;
         line-height: 1.6;
-        color: {t['text_muted']};
+        color: {T_TEXT_MUTED};
+    }}
+    .empty-state b {{
+        color: {T_TEXT_SEC};
+    }}
+    .file-meta {{
+        margin-top: 1rem;
+        font-size: 0.8rem;
+        color: {T_TEXT_MUTED};
+        line-height: 1.5;
+    }}
+    .file-meta b {{
+        color: {T_TEXT_SEC};
     }}
 
     /* ── Summary card ─────────────────────────────────────── */
     .summary-card {{
-        background: {t['summary_bg']};
-        border: 1px solid {t['summary_br']};
+        background: {T_SUMMARY_BG};
+        border: 1px solid {T_SUMMARY_BR};
         border-radius: 10px;
         padding: 1.5rem 1.8rem;
         margin-top: 0.8rem;
         line-height: 1.75;
         font-size: 0.91rem;
-        color: {t['summary_text']};
+        color: {T_SUMMARY_TX};
+    }}
+    .summary-card p {{
+        color: {T_SUMMARY_TX} !important;
     }}
     .summary-card h1, .summary-card h2, .summary-card h3,
-    .summary-card h4, .summary-card h5 {{
-        color: {t['summary_h']} !important;
+    .summary-card h4, .summary-card h5, .summary-card strong {{
+        color: {T_SUMMARY_H} !important;
+    }}
+    .summary-card h4 {{
         margin: 1.1rem 0 0.3rem;
         font-size: 0.88rem;
         font-weight: 700;
     }}
     .summary-card h4:first-child {{ margin-top: 0; }}
     .summary-card ul {{ padding-left: 1.2rem; margin: 0.2rem 0; }}
-    .summary-card li {{ margin-bottom: 0.2rem; color: {t['summary_text']}; }}
-    .summary-card strong {{ color: {t['summary_h']}; }}
-
-    /* ── Status widget ────────────────────────────────────── */
-    [data-testid="stStatusWidget"] {{
-        background: {t['surface']} !important;
-        border: 1px solid {t['surface_br']} !important;
-        border-radius: 10px !important;
+    .summary-card li {{
+        margin-bottom: 0.2rem;
+        color: {T_SUMMARY_TX} !important;
     }}
 
-    /* ── Checkbox and toggle styling ──────────────────────── */
-    .stCheckbox label span {{
-        color: {t['text']} !important;
+    /* ═══════════════════════════════════════════════════════
+       DROPDOWN MENUS (popover)
+       ═══════════════════════════════════════════════════════ */
+    [data-baseweb="popover"],
+    [data-baseweb="menu"],
+    [data-baseweb="popover"] ul,
+    [data-baseweb="menu"] ul {{
+        background: {T_INPUT_BG} !important;
+        border-color: {T_INPUT_BR} !important;
     }}
-
-    /* ── Theme toggle pill ────────────────────────────────── */
-    .theme-toggle {{
-        position: fixed;
-        top: 14px;
-        right: 20px;
-        z-index: 9999;
+    [data-baseweb="popover"] li,
+    [data-baseweb="menu"] li {{
+        color: {T_INPUT_TEXT} !important;
+        background: transparent !important;
+    }}
+    [data-baseweb="popover"] li:hover,
+    [data-baseweb="menu"] li:hover {{
+        background: {T_BORDER} !important;
     }}
 </style>
 """, unsafe_allow_html=True)
 
 # ── Header ───────────────────────────────────────────────────
-st.markdown(f"""
+st.markdown("""
 <div class="app-header">
     <h1>Play Store Reviews Scraper</h1>
 </div>
@@ -320,13 +519,11 @@ with st.sidebar:
     st.divider()
     scrape = st.button("Start Scraping", use_container_width=True)
 
-    # ── Theme toggle at bottom of sidebar ────────────────────
     st.divider()
-    mode_label = "Switch to Light Mode" if dark else "Switch to Dark Mode"
+    mode_label = "Light Mode" if dark else "Dark Mode"
     if st.button(mode_label, use_container_width=True, key="theme_toggle"):
         st.session_state.dark_mode = not st.session_state.dark_mode
         st.rerun()
-
 
 # ── Scraping ─────────────────────────────────────────────────
 SORT_MAP = {"Most Relevant": Sort.MOST_RELEVANT, "Newest": Sort.NEWEST}
@@ -404,7 +601,6 @@ if scrape:
     st.session_state.df = df
     st.session_state.meta = {"app_id": app_id, "country": country}
 
-
 # ── Display ──────────────────────────────────────────────────
 df = st.session_state.df
 
@@ -440,7 +636,7 @@ if df is not None and not df.empty:
     if "Rating" in df.columns:
         dist = df["Rating"].value_counts().reindex([1, 2, 3, 4, 5], fill_value=0)
         if st.session_state.chart_mode == "chart":
-            st.bar_chart(dist, color=t["chart_color"], height=220)
+            st.bar_chart(dist, color=T_CHART, height=220)
         else:
             dist_df = pd.DataFrame({
                 "Rating": [f"{i} ★" for i in range(1, 6)],
@@ -466,7 +662,7 @@ if df is not None and not df.empty:
 
     fname_base = f"{meta.get('app_id', 'app')}_{meta.get('country', 'xx')}_{datetime.now().strftime('%Y%m%d_%H%M')}"
 
-    dl1, dl2, _ = st.columns([0.15, 0.15, 0.7])
+    dl1, dl2, dl_meta = st.columns([0.15, 0.15, 0.7])
     with dl1:
         csv_data = display_df.to_csv(index=False).encode("utf-8")
         st.download_button(
@@ -488,6 +684,12 @@ if df is not None and not df.empty:
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.xml",
             use_container_width=True,
         )
+    with dl_meta:
+        st.markdown(f"""
+        <div class="file-meta">
+            <b>{len(display_df):,}</b> rows  ·  <b>{len(display_df.columns)}</b> cols  ·  {len(csv_data)/1024:.0f} KB
+        </div>
+        """, unsafe_allow_html=True)
 
     # ── AI Summary ───────────────────────────────────────────
     st.divider()
@@ -557,7 +759,7 @@ if df is not None and not df.empty:
         )
 
 else:
-    st.markdown(f"""
+    st.markdown("""
     <div class="empty-state">
         <div class="icon">★</div>
         <p>Enter an <b>App ID</b> in the sidebar and hit <b>Start Scraping</b> to pull reviews.</p>
