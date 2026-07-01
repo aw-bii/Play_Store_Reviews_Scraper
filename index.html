@@ -6,181 +6,278 @@
     <title>Play Store Reviews Scraper</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
-            --be-blue: #002d64;
-            --be-blue-2: #afbed2;
-            --be-blue-5: #415f8c;
-            --be-gray: #464646;
-            --be-gray-2: #dcdcdc;
-            --be-gray-3: #cdcdcd;
-            --be-gray-4: #a0a0a0;
-            --be-gray-5: #646464;
-            --be-red: #e60028;
-            --be-red-2: #eb5a50;
-            --text-1: #464646;
-            --text-2: #646464;
-            --text-3: #a0a0a0;
-            --card-bg: #f5f6f8;
-            --card-br: #e8ecf0;
-            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            --accent: #002d64;
+            --accent-hover: #1a437a;
+            --accent-ghost: rgba(0, 45, 100, 0.06);
+            --accent-muted: #415f8c;
+            --accent-light: #afbed2;
+            --bg: #fcfcfd;
+            --bg-elevated: #f4f5f8;
+            --bg-elevated-2: #eef0f4;
+            --border: #e2e5ec;
+            --text-primary: #1f2128;
+            --text-secondary: #6b6f80;
+            --text-tertiary: #9ca0af;
+            --code-bg: #002d64;
+            --code-text: #ffffff;
+            --code-comment: #afbed2;
+            --hero-img-bg: #f0f2f6;
+            --radius: 8px;
+            --radius-pill: 9999px;
+            --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --accent: #8aa3c7;
+                --accent-hover: #a6bbdb;
+                --accent-ghost: rgba(138, 163, 199, 0.1);
+                --accent-muted: #6b84a8;
+                --accent-light: #3d5a7a;
+                --bg: #0b0d14;
+                --bg-elevated: #12141e;
+                --bg-elevated-2: #181b27;
+                --border: #23263a;
+                --text-primary: #e2e4ec;
+                --text-secondary: #9598a8;
+                --text-tertiary: #626678;
+                --code-bg: #181b27;
+                --code-text: #e2e4ec;
+                --code-comment: #626678;
+                --hero-img-bg: #12141e;
+            }
         }
         html { font-size: 16px; scroll-behavior: smooth; }
         body {
-            font-family: var(--font);
-            color: var(--text-1);
-            background: #fff;
+            font-family: var(--font-sans);
+            color: var(--text-primary);
+            background: var(--bg);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
         }
-        a { color: var(--be-blue); text-decoration: none; }
+        a { color: var(--accent); text-decoration: none; }
         a:hover { text-decoration: underline; }
-        img { max-width: 100%; height: auto; }
+        img { max-width: 100%; height: auto; display: block; }
 
         .container { max-width: 1040px; margin: 0 auto; padding: 0 2rem; }
+
+        /* ── Scroll reveal ────────────────────── */
+        .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
+        .reveal-delay-5 { transition-delay: 0.5s; }
+        .reveal-delay-6 { transition-delay: 0.6s; }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { opacity: 1; transform: none; transition: none; }
+        }
 
         /* ── Nav ────────────────────────────── */
         nav {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 1.25rem 2rem; max-width: 1080px; margin: 0 auto;
+            padding: 1rem 2rem; max-width: 1080px; margin: 0 auto; height: 64px;
         }
-        nav .logo { font-weight: 700; font-size: 1.05rem; color: var(--be-blue); }
+        nav .logo { font-weight: 700; font-size: 1.05rem; color: var(--accent); }
         nav .nav-links { display: flex; gap: 1.75rem; align-items: center; }
-        nav .nav-links a { font-size: 0.875rem; font-weight: 500; color: var(--text-2); transition: color 0.15s; }
-        nav .nav-links a:hover { color: var(--be-blue); text-decoration: none; }
+        nav .nav-links a { font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); transition: color 0.2s ease; }
+        nav .nav-links a:hover { color: var(--accent); text-decoration: none; }
         .nav-cta {
-            display: inline-block; background: var(--be-red); color: #fff !important;
-            padding: 0.45rem 1.2rem; border-radius: 980px; font-weight: 600; font-size: 0.8rem;
-            transition: background 0.15s;
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            background: var(--accent); color: #fff !important;
+            padding: 0.45rem 1.2rem; border-radius: var(--radius-pill); font-weight: 600; font-size: 0.8rem;
+            transition: background 0.2s ease, transform 0.15s ease;
         }
-        .nav-cta:hover { background: var(--be-red-2); text-decoration: none !important; }
+        .nav-cta:hover { background: var(--accent-hover); text-decoration: none !important; }
+        .nav-cta:active { transform: scale(0.97); }
 
         /* ── Hero ────────────────────────────── */
         .hero {
-            padding: 5rem 0 4rem; text-align: center; max-width: 720px; margin: 0 auto;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;
+            max-width: 1080px; margin: 0 auto; padding: 4rem 2rem 5rem;
+            align-items: center; min-height: calc(100dvh - 64px);
         }
-        .hero h1 {
-            font-size: 3rem; font-weight: 700; letter-spacing: -0.03em;
-            color: var(--be-blue); line-height: 1.1; margin-bottom: 1rem;
+        .hero-content { max-width: 480px; }
+        .hero-content h1 {
+            font-size: 2.75rem; font-weight: 700; letter-spacing: -0.03em;
+            color: var(--accent); line-height: 1.05; margin-bottom: 1rem;
         }
-        .hero p {
-            font-size: 1.1rem; color: var(--text-3); line-height: 1.7;
-            max-width: 580px; margin: 0 auto 2rem;
+        .hero-content p {
+            font-size: 1rem; color: var(--text-tertiary); line-height: 1.7;
+            margin-bottom: 1.75rem;
         }
-        .hero-buttons { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+        .hero-buttons { display: flex; gap: 0.75rem; flex-wrap: wrap; }
         .btn-primary {
             display: inline-flex; align-items: center; gap: 0.4rem;
-            background: var(--be-blue); color: #fff; padding: 0.7rem 1.6rem;
-            border-radius: 980px; font-weight: 600; font-size: 0.9rem;
-            transition: background 0.15s, transform 0.1s;
+            background: var(--accent); color: #fff; padding: 0.7rem 1.6rem;
+            border-radius: var(--radius-pill); font-weight: 600; font-size: 0.9rem;
+            transition: background 0.2s ease, transform 0.15s ease;
         }
-        .btn-primary:hover { background: var(--be-blue-5); text-decoration: none; }
+        .btn-primary:hover { background: var(--accent-hover); text-decoration: none; }
+        .btn-primary:active { transform: scale(0.97); }
         .btn-secondary {
             display: inline-flex; align-items: center; gap: 0.4rem;
-            background: var(--card-bg); color: var(--text-1); padding: 0.7rem 1.6rem;
-            border: 1px solid var(--be-gray-3); border-radius: 980px; font-weight: 600; font-size: 0.9rem;
-            transition: background 0.15s;
+            background: var(--bg-elevated); color: var(--text-primary); padding: 0.7rem 1.6rem;
+            border: 1px solid var(--border); border-radius: var(--radius-pill); font-weight: 600; font-size: 0.9rem;
+            transition: background 0.2s ease, transform 0.15s ease;
         }
-        .btn-secondary:hover { background: var(--be-gray-2); text-decoration: none; }
+        .btn-secondary:hover { background: var(--bg-elevated-2); text-decoration: none; }
+        .btn-secondary:active { transform: scale(0.97); }
+        .hero-visual {
+            background: var(--hero-img-bg); border-radius: var(--radius);
+            overflow: hidden; aspect-ratio: 4 / 3;
+        }
+        .hero-visual img { width: 100%; height: 100%; object-fit: cover; }
 
         /* ── Section ──────────────────────────── */
-        section { padding: 4rem 0; }
-        section + section { border-top: 1px solid var(--card-br); }
-        .section-label {
-            font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em;
-            text-transform: uppercase; color: var(--be-blue); margin-bottom: 0.75rem;
-        }
+        section { padding: 5rem 0; }
         .section-title {
-            font-size: 1.75rem; font-weight: 700; color: var(--be-blue);
-            letter-spacing: -0.02em; margin-bottom: 0.75rem; line-height: 1.2;
+            font-size: 1.5rem; font-weight: 700; color: var(--accent);
+            letter-spacing: -0.02em; margin-bottom: 1rem; line-height: 1.2;
         }
         .section-sub {
-            font-size: 0.95rem; color: var(--text-3); max-width: 560px;
+            font-size: 0.9rem; color: var(--text-tertiary); max-width: 520px;
             margin-bottom: 2.5rem; line-height: 1.7;
         }
+        .eyebrow {
+            display: inline-block; font-family: var(--font-mono); font-size: 0.7rem;
+            font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+            color: var(--accent-muted); margin-bottom: 0.5rem;
+        }
 
-        /* ── Features grid ────────────────────── */
-        .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        /* ── Features ─────────────────────────── */
+        .features-grid {
+            display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem;
+        }
+        .features-grid-second {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem;
+            margin-top: 1.25rem;
+        }
         .feature-card {
-            background: var(--card-bg); border: 1px solid var(--card-br); border-radius: 8px;
-            padding: 1.75rem; transition: box-shadow 0.2s;
+            background: var(--bg-elevated); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.5rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
-        .feature-card:hover { box-shadow: 0 4px 20px rgba(0,45,100,0.06); }
-        .feature-card .icon {
-            font-size: 1.5rem; font-weight: 700; color: var(--be-blue);
-            width: 2.5rem; height: 2.5rem; background: rgba(0,45,100,0.06);
+        .feature-card:hover {
+            border-color: var(--accent-light); box-shadow: 0 2px 16px rgba(0, 45, 100, 0.05);
+        }
+        .feature-card.accent {
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            border-color: transparent; color: #fff;
+        }
+        .feature-card.accent h3 { color: #fff; }
+        .feature-card.accent p { color: rgba(255, 255, 255, 0.75); }
+        .feature-card.accent .card-icon { background: rgba(255, 255, 255, 0.15); color: #fff; }
+        .feature-card h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-primary); }
+        .feature-card p { font-size: 0.82rem; color: var(--text-tertiary); line-height: 1.6; }
+        .card-icon {
+            font-size: 1.1rem; font-weight: 600; color: var(--accent);
+            width: 2rem; height: 2rem; background: var(--accent-ghost);
             border-radius: 6px; display: flex; align-items: center; justify-content: center;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem; font-family: var(--font-mono);
         }
-        .feature-card h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-1); }
-        .feature-card p { font-size: 0.85rem; color: var(--text-3); line-height: 1.6; }
+        .feature-compact {
+            grid-column: 1 / -1;
+            display: flex; align-items: center; gap: 1rem;
+            background: var(--bg-elevated); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem 1.5rem; margin-top: 1.25rem;
+        }
+        .feature-compact .card-icon { margin-bottom: 0; flex-shrink: 0; }
+        .feature-compact h3 { font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
+        .feature-compact p { font-size: 0.82rem; color: var(--text-tertiary); }
 
-        /* ── How it works ─────────────────────── */
-        .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; counter-reset: step; }
-        .step {
-            text-align: center; padding: 1.5rem; position: relative;
+        /* ── Timeline ─────────────────────────── */
+        .timeline { position: relative; padding-left: 3rem; }
+        .timeline::before {
+            content: ''; position: absolute; left: 1rem; top: 0.5rem; bottom: 0.5rem;
+            width: 1px; background: var(--border);
         }
-        .step::before {
-            counter-increment: step; content: counter(step);
+        .timeline-step { position: relative; padding-bottom: 2.5rem; }
+        .timeline-step:last-child { padding-bottom: 0; }
+        .timeline-step::before {
+            content: attr(data-step);
+            position: absolute; left: -3rem; top: 0;
+            width: 2rem; height: 2rem; border-radius: 50%;
+            background: var(--accent); color: #fff;
             display: flex; align-items: center; justify-content: center;
-            width: 2.5rem; height: 2.5rem; border-radius: 50%;
-            background: var(--be-blue); color: #fff;
-            font-weight: 700; font-size: 0.9rem; margin: 0 auto 1rem;
+            font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600;
+            z-index: 1;
         }
-        .step h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.35rem; }
-        .step p { font-size: 0.82rem; color: var(--text-3); line-height: 1.6; }
+        .timeline-step h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.2rem; color: var(--text-primary); }
+        .timeline-step p { font-size: 0.85rem; color: var(--text-tertiary); line-height: 1.6; max-width: 480px; }
 
-        /* ── Usage table ──────────────────────── */
-        .usage-table {
-            width: 100%; border-collapse: collapse; font-size: 0.88rem;
-        }
-        .usage-table th {
-            text-align: left; padding: 0.7rem 1rem; background: var(--card-bg);
-            font-weight: 600; color: var(--text-2); border-bottom: 2px solid var(--card-br);
-        }
-        .usage-table td {
-            padding: 0.7rem 1rem; border-bottom: 1px solid var(--card-br); color: var(--text-1);
-        }
-        .usage-table td:first-child {
-            font-weight: 600; color: var(--be-blue); white-space: nowrap;
-        }
-        .usage-table code {
-            background: var(--card-bg); padding: 0.15rem 0.4rem; border-radius: 3px;
-            font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.8rem;
-            color: var(--be-red);
-        }
-        .usage-table tr:hover td { background: #fafbfc; }
-
-        /* ── Quick start code ─────────────────── */
+        /* ── Code block ───────────────────────── */
         .code-block {
-            background: var(--be-blue); color: #fff; border-radius: 8px;
-            padding: 1.5rem 2rem; font-family: 'SF Mono', 'Fira Code', monospace;
-            font-size: 0.85rem; line-height: 1.8; overflow-x: auto;
-            margin-bottom: 1rem; white-space: pre;
+            background: var(--code-bg); color: var(--code-text); border-radius: var(--radius);
+            padding: 1.5rem 2rem; font-family: var(--font-mono); font-size: 0.82rem;
+            line-height: 1.8; overflow-x: auto; margin-bottom: 1rem; white-space: pre;
         }
-        .code-block .comment { color: var(--be-blue-2); }
-        .code-block .cmd { color: #fff; }
-        .code-block .output { color: var(--be-blue-2); }
+        .code-block .comment { color: var(--code-comment); }
+
+        /* ── Parameter cards ──────────────────── */
+        .param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .param-card {
+            background: var(--bg-elevated); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.25rem;
+        }
+        .param-card .field { font-size: 0.75rem; font-weight: 600; color: var(--accent); margin-bottom: 0.2rem; }
+        .param-card .example {
+            font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-secondary);
+            background: var(--bg-elevated-2); padding: 0.1rem 0.4rem; border-radius: 3px;
+            display: inline-block; margin-bottom: 0.35rem;
+        }
+        .param-card .desc { font-size: 0.82rem; color: var(--text-tertiary); line-height: 1.5; }
+
+        /* ── Dependencies mini ────────────────── */
+        .deps {
+            display: flex; flex-wrap: wrap; gap: 0.5rem;
+        }
+        .deps span {
+            font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary);
+            background: var(--bg-elevated); border: 1px solid var(--border);
+            padding: 0.2rem 0.6rem; border-radius: 4px;
+        }
 
         /* ── Footer ────────────────────────────── */
         footer {
-            border-top: 1px solid var(--card-br); padding: 2rem 0;
-            text-align: center; font-size: 0.82rem; color: var(--text-3);
+            border-top: 1px solid var(--border); padding: 2rem 0;
+            text-align: center; font-size: 0.8rem; color: var(--text-tertiary);
         }
-        footer a { color: var(--text-2); }
+        footer a { color: var(--text-secondary); }
 
         /* ── Responsive ────────────────────────── */
+        @media (max-width: 1024px) {
+            .hero { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 2rem 4rem; min-height: auto; text-align: center; }
+            .hero-content { max-width: 100%; }
+            .hero-content p { max-width: 500px; margin-left: auto; margin-right: auto; }
+            .hero-buttons { justify-content: center; }
+            .hero-visual { max-width: 500px; margin: 0 auto; }
+            .features-grid { grid-template-columns: 1fr; }
+            .features-grid-second { grid-template-columns: 1fr; margin-top: 0; }
+            .features-grid-second .feature-card:first-child { margin-top: 0; }
+        }
         @media (max-width: 768px) {
-            .hero h1 { font-size: 2rem; }
-            .features { grid-template-columns: 1fr; }
-            .steps { grid-template-columns: 1fr 1fr; }
             nav .nav-links a:not(.nav-cta) { display: none; }
+            .hero { padding: 2rem 1.25rem 3rem; }
+            .hero-content h1 { font-size: 2rem; }
+            .section-title { font-size: 1.3rem; }
+            .param-grid { grid-template-columns: 1fr; }
+            .features-grid-second { grid-template-columns: 1fr; margin-top: 0; gap: 0; }
+            .features-grid { gap: 0; }
+            .features-grid > .feature-card { margin-bottom: 0; }
+            .feature-compact { flex-wrap: wrap; gap: 0.5rem; }
+            .timeline { padding-left: 2.5rem; }
+            .timeline-step::before { left: -2.5rem; width: 1.75rem; height: 1.75rem; font-size: 0.65rem; }
+            section { padding: 3rem 0; }
         }
         @media (max-width: 480px) {
-            .steps { grid-template-columns: 1fr; }
             .container { padding: 0 1.25rem; }
+            .code-block { padding: 1.25rem; font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -191,65 +288,73 @@
     <span class="logo">Play Store Reviews Scraper</span>
     <div class="nav-links">
         <a href="#features">Features</a>
-        <a href="#usage">Usage</a>
         <a href="https://github.com/aw-bii/Play_Store_Reviews_Scraper" target="_blank">GitHub</a>
-        <a href="https://play-store-reviews-scraper.streamlit.app" target="_blank" class="nav-cta">Open App</a>
+        <a href="https://play-store-reviews-scraper.streamlit.app" target="_blank" class="nav-cta">Launch App</a>
     </div>
 </nav>
 
 <!-- ─── Hero ──────────────────────────────── -->
 <div class="hero">
-    <h1>Pull, preview, and export<br>Google Play reviews.</h1>
-    <p>A lightweight tool that scrapes up to 10,000 reviews for any Play Store app — with filtering, export, and AI-powered summaries.</p>
-    <div class="hero-buttons">
-        <a href="https://play-store-reviews-scraper.streamlit.app" target="_blank" class="btn-primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            Launch App
-        </a>
-        <a href="https://github.com/aw-bii/Play_Store_Reviews_Scraper" target="_blank" class="btn-secondary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-            View on GitHub
-        </a>
+    <div class="hero-content">
+        <h1>Pull, preview, and export Google Play reviews.</h1>
+        <p>Scrape up to 10,000 reviews for any Play Store app. Filter, export, and summarize with AI.</p>
+        <div class="hero-buttons">
+            <a href="https://play-store-reviews-scraper.streamlit.app" target="_blank" class="btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Launch App
+            </a>
+            <a href="https://github.com/aw-bii/Play_Store_Reviews_Scraper" target="_blank" class="btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                View on GitHub
+            </a>
+        </div>
+    </div>
+    <div class="hero-visual">
+        <img src="https://picsum.photos/seed/reviews-analytics/640/480" alt="Reviews analytics dashboard" width="640" height="480" loading="eager">
     </div>
 </div>
 
 <!-- ─── Features ───────────────────────────── -->
 <section id="features">
     <div class="container">
-        <div class="section-label">Features</div>
-        <h2 class="section-title">Everything you need to analyse Play Store reviews.</h2>
-        <p class="section-sub">Scrape, filter, and export reviews in seconds — no API keys or setup required.</p>
-        <div class="features">
-            <div class="feature-card">
-                <div class="icon">⌂</div>
+        <h2 class="section-title">Everything you need to analyze Play Store reviews.</h2>
+        <p class="section-sub">Scrape, filter, and export reviews in seconds. No API keys or setup required.</p>
+
+        <div class="features-grid">
+            <div class="feature-card accent reveal">
+                <div class="card-icon">&lt;/&gt;</div>
                 <h3>Bulk scraping</h3>
-                <p>Fetch up to 10,000 reviews for any Google Play app using its app ID.</p>
+                <p>Fetch up to 10,000 reviews for any Google Play app using its app ID. Pagination handled automatically.</p>
             </div>
-            <div class="feature-card">
-                <div class="icon">⌘</div>
+            <div class="feature-card reveal reveal-delay-1">
+                <div class="card-icon">#</div>
                 <h3>Smart filters</h3>
-                <p>Filter by country, star rating, and sort order (newest or most relevant).</p>
+                <p>Filter by country, star rating, and sort order - newest or most relevant.</p>
             </div>
-            <div class="feature-card">
-                <div class="icon">◉</div>
-                <h3>Rating distribution</h3>
-                <p>View summary metrics including average rating, 5-star count, and NPS at a glance.</p>
+        </div>
+
+        <div class="features-grid-second">
+            <div class="feature-card reveal reveal-delay-2">
+                <div class="card-icon">*</div>
+                <h3>Ratings &amp; NPS</h3>
+                <p>View average rating, 5-star count, and NPS score calculated from your data set.</p>
             </div>
-            <div class="feature-card">
-                <div class="icon">⇩</div>
-                <h3>CSV &amp; XLSX export</h3>
+            <div class="feature-card reveal reveal-delay-3">
+                <div class="card-icon">~</div>
+                <h3>CSV &amp; XLSX</h3>
                 <p>Download scraped reviews as CSV or Excel files for further analysis.</p>
             </div>
-            <div class="feature-card">
-                <div class="icon">✦</div>
+            <div class="feature-card reveal reveal-delay-4">
+                <div class="card-icon">@</div>
                 <h3>AI summaries</h3>
-                <p>One-click AI-powered summary of reviews using Google Gemini.</p>
+                <p>One-click AI-powered review summary using Google Gemini.</p>
             </div>
-            <div class="feature-card">
-                <div class="icon">◻</div>
-                <h3>Version tracking</h3>
-                <p>Optionally include the app version column in your export for trend analysis.</p>
-            </div>
+        </div>
+
+        <div class="feature-compact reveal reveal-delay-5">
+            <div class="card-icon">+</div>
+            <h3>Version tracking</h3>
+            <p>Optionally include the app version column in your export for trend analysis over time.</p>
         </div>
     </div>
 </section>
@@ -257,25 +362,26 @@
 <!-- ─── How It Works ───────────────────────── -->
 <section>
     <div class="container">
-        <div class="section-label">How It Works</div>
+        <span class="eyebrow">How it works</span>
         <h2 class="section-title">Three clicks to reviews.</h2>
-        <p class="section-sub">No accounts, no API keys — just an app ID and you're set.</p>
-        <div class="steps">
-            <div class="step">
+        <p class="section-sub">No accounts, no API keys. Just an app ID and you are set.</p>
+
+        <div class="timeline">
+            <div class="timeline-step" data-step="1">
                 <h3>Enter App ID</h3>
-                <p>Copy the ID from any Play Store URL (<code style="font-size:0.78rem;background:var(--card-bg);padding:0.1rem 0.3rem;border-radius:2px;">?id=com.spotify.music</code>)</p>
+                <p>Copy the ID from any Play Store URL - look for <code>?id=com.spotify.music</code> in the address.</p>
             </div>
-            <div class="step">
+            <div class="timeline-step" data-step="2">
                 <h3>Set filters</h3>
                 <p>Choose country, sort order, star rating, and how many reviews to pull.</p>
             </div>
-            <div class="step">
+            <div class="timeline-step" data-step="3">
                 <h3>Scrape</h3>
-                <p>Hit "Start scraping" and watch reviews populate in real time.</p>
+                <p>Hit "Start scraping" and watch reviews populate in real time with progress tracking.</p>
             </div>
-            <div class="step">
+            <div class="timeline-step" data-step="4">
                 <h3>Export</h3>
-                <p>Preview the data table, generate an AI summary, or download as CSV / XLSX.</p>
+                <p>Preview the data table, generate an AI summary, or download as CSV or XLSX.</p>
             </div>
         </div>
     </div>
@@ -284,68 +390,92 @@
 <!-- ─── Quick Start ────────────────────────── -->
 <section>
     <div class="container">
-        <div class="section-label">Quick Start</div>
         <h2 class="section-title">Run locally in seconds.</h2>
         <p class="section-sub">Clone the repo, install dependencies, and launch.</p>
-        <div class="code-block">git clone https://github.com/aw-bii/Play_Store_Reviews_Scraper.git
-cd Play_Store_Reviews_Scraper
 
+        <div class="code-block"><span class="comment"># clone and install</span>
+git clone https://github.com/aw-bii/Play_Store_Reviews_Scraper.git
+cd Play_Store_Reviews_Scraper
 pip install -r requirements.txt
 
+<span class="comment"># launch the app</span>
 streamlit run streamlit_app.py</div>
-        <p style="font-size:0.85rem;color:var(--text-3);">Opens at <a href="http://localhost:8501" style="font-weight:600;">http://localhost:8501</a></p>
+        <p style="font-size:0.82rem;color:var(--text-tertiary);">Opens at <a href="http://localhost:8501" style="font-weight:600;color:var(--accent);" target="_blank">http://localhost:8501</a></p>
     </div>
 </section>
 
-<!-- ─── Usage ───────────────────────────────── -->
+<!-- ─── Parameters ─────────────────────────── -->
 <section id="usage">
     <div class="container">
-        <div class="section-label">Usage</div>
         <h2 class="section-title">Parameters at a glance.</h2>
-        <p class="section-sub">All the knobs available in the sidebar.</p>
-        <table class="usage-table">
-            <thead>
-                <tr><th>Field</th><th>Example</th><th>Description</th></tr>
-            </thead>
-            <tbody>
-                <tr><td>App ID</td><td><code>com.spotify.music</code></td><td>From the Play Store URL (<code>?id=...</code>)</td></tr>
-                <tr><td>Country</td><td><code>in</code></td><td>ISO 3166-1 alpha-2 country code</td></tr>
-                <tr><td>Reviews</td><td><code>500</code></td><td>Number of reviews to fetch (1–10,000)</td></tr>
-                <tr><td>Sort By</td><td><code>Newest</code></td><td>Newest or Most Relevant</td></tr>
-                <tr><td>Star Filter</td><td><code>1, 2</code></td><td>Optional — leave empty for all ratings</td></tr>
-                <tr><td>App Version</td><td>checkbox</td><td>Toggle to include the version column</td></tr>
-            </tbody>
-        </table>
+        <p class="section-sub">All the controls available in the sidebar.</p>
+
+        <div class="param-grid">
+            <div class="param-card reveal">
+                <div class="field">App ID</div>
+                <div class="example">com.spotify.music</div>
+                <div class="desc">From the Play Store URL, after <code>?id=</code></div>
+            </div>
+            <div class="param-card reveal reveal-delay-1">
+                <div class="field">Country</div>
+                <div class="example">in, us, gb, de</div>
+                <div class="desc">ISO 3166-1 alpha-2 country code</div>
+            </div>
+            <div class="param-card reveal reveal-delay-2">
+                <div class="field">Reviews</div>
+                <div class="example">500</div>
+                <div class="desc">Number of reviews to fetch (1 to 10,000)</div>
+            </div>
+            <div class="param-card reveal reveal-delay-3">
+                <div class="field">Sort By</div>
+                <div class="example">Newest, Most Relevant</div>
+                <div class="desc">Sort order for review results</div>
+            </div>
+            <div class="param-card reveal reveal-delay-4">
+                <div class="field">Star Filter</div>
+                <div class="example">1, 2, 5</div>
+                <div class="desc">Optional filter by rating. Leave empty for all.</div>
+            </div>
+            <div class="param-card reveal reveal-delay-5">
+                <div class="field">App Version</div>
+                <div class="example">toggle</div>
+                <div class="desc">Include the version column in your export</div>
+            </div>
+        </div>
     </div>
 </section>
 
-<!-- ─── Dependencies ────────────────────────── -->
+<!-- ─── Built With ─────────────────────────── -->
 <section>
-    <div class="container">
-        <div class="section-label">Built With</div>
-        <h2 class="section-title">Modern Python stack.</h2>
-        <p class="section-sub">Powered by these open-source libraries.</p>
-        <table class="usage-table" style="max-width:600px;">
-            <thead>
-                <tr><th>Package</th><th>Purpose</th></tr>
-            </thead>
-            <tbody>
-                <tr><td>Streamlit</td><td>Web UI</td></tr>
-                <tr><td>google-play-scraper</td><td>Play Store data extraction</td></tr>
-                <tr><td>pandas</td><td>Data handling and export</td></tr>
-                <tr><td>openpyxl</td><td>XLSX export</td></tr>
-                <tr><td>pycountry</td><td>Country name/code lookup</td></tr>
-            </tbody>
-        </table>
+    <div class="container" style="max-width:520px;text-align:center;">
+        <h2 class="section-title" style="font-size:1.1rem;">Built with</h2>
+        <div class="deps" style="justify-content:center;">
+            <span>streamlit</span>
+            <span>google-play-scraper</span>
+            <span>pandas</span>
+            <span>openpyxl</span>
+            <span>pycountry</span>
+        </div>
     </div>
 </section>
 
 <!-- ─── Footer ──────────────────────────────── -->
 <footer>
     <div class="container">
-        <p><a href="https://github.com/aw-bii/Play_Store_Reviews_Scraper">Play Store Reviews Scraper</a> &middot; Internal tool &mdash; not for public distribution</p>
+        <p><a href="https://github.com/aw-bii/Play_Store_Reviews_Scraper">Play Store Reviews Scraper</a> &middot; Internal tool - not for public distribution</p>
     </div>
 </footer>
+
+<script>
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
 
 </body>
 </html>
