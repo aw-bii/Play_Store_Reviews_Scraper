@@ -28,6 +28,8 @@
             --hero-img-bg: #f0f2f6;
             --radius: 8px;
             --radius-pill: 9999px;
+            --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+            --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
             --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
             --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
         }
@@ -66,14 +68,14 @@
         .container { max-width: 1040px; margin: 0 auto; padding: 0 2rem; }
 
         /* ── Scroll reveal ────────────────────── */
-        .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.3s var(--ease-out), transform 0.3s var(--ease-out); }
         .reveal.visible { opacity: 1; transform: translateY(0); }
-        .reveal-delay-1 { transition-delay: 0.1s; }
-        .reveal-delay-2 { transition-delay: 0.2s; }
-        .reveal-delay-3 { transition-delay: 0.3s; }
-        .reveal-delay-4 { transition-delay: 0.4s; }
-        .reveal-delay-5 { transition-delay: 0.5s; }
-        .reveal-delay-6 { transition-delay: 0.6s; }
+        .reveal-d1 { transition-delay: 0.05s; }
+        .reveal-d2 { transition-delay: 0.1s; }
+        .reveal-d3 { transition-delay: 0.15s; }
+        .reveal-d4 { transition-delay: 0.2s; }
+        .reveal-d5 { transition-delay: 0.25s; }
+        .reveal-d6 { transition-delay: 0.3s; }
         @media (prefers-reduced-motion: reduce) {
             .reveal { opacity: 1; transform: none; transition: none; }
         }
@@ -85,49 +87,49 @@
         }
         nav .logo { font-weight: 700; font-size: 1.05rem; color: var(--accent); }
         nav .nav-links { display: flex; gap: 1.75rem; align-items: center; }
-        nav .nav-links a { font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); transition: color 0.2s ease; }
+        nav .nav-links a { font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); transition: color 0.2s var(--ease-out); }
         nav .nav-links a:hover { color: var(--accent); text-decoration: none; }
         .nav-cta {
             display: inline-flex; align-items: center; gap: 0.35rem;
             background: var(--accent); color: #fff !important;
             padding: 0.45rem 1.2rem; border-radius: var(--radius-pill); font-weight: 600; font-size: 0.8rem;
-            transition: background 0.2s ease, transform 0.15s ease;
+            transition: background 0.15s var(--ease-out), transform 0.12s var(--ease-out);
         }
         .nav-cta:hover { background: var(--accent-hover); text-decoration: none !important; }
         .nav-cta:active { transform: scale(0.97); }
 
         /* ── Hero ────────────────────────────── */
         .hero {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;
-            max-width: 1080px; margin: 0 auto; padding: 4rem 2rem 5rem;
-            align-items: center; min-height: calc(100dvh - 64px);
+            display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+            max-width: 1080px; margin: 0 auto; padding: 2.5rem 2rem 3rem;
+            align-items: center;
         }
         .hero-content { max-width: 480px; }
         .hero-content h1 {
-            font-size: 2.75rem; font-weight: 700; letter-spacing: -0.03em;
-            color: var(--accent); line-height: 1.05; margin-bottom: 1rem;
+            font-size: 2.5rem; font-weight: 700; letter-spacing: -0.03em;
+            color: var(--accent); line-height: 1.05; margin-bottom: 0.75rem;
         }
         .hero-content p {
-            font-size: 1rem; color: var(--text-tertiary); line-height: 1.7;
-            margin-bottom: 1.75rem;
+            font-size: 0.95rem; color: var(--text-tertiary); line-height: 1.7;
+            margin-bottom: 1.5rem;
         }
         .hero-buttons { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-        .btn-primary {
+        .btn {
             display: inline-flex; align-items: center; gap: 0.4rem;
-            background: var(--accent); color: #fff; padding: 0.7rem 1.6rem;
             border-radius: var(--radius-pill); font-weight: 600; font-size: 0.9rem;
-            transition: background 0.2s ease, transform 0.15s ease;
+            transition: background 0.15s var(--ease-out), transform 0.12s var(--ease-out);
+            cursor: pointer;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary {
+            background: var(--accent); color: #fff; padding: 0.65rem 1.5rem;
         }
         .btn-primary:hover { background: var(--accent-hover); text-decoration: none; }
-        .btn-primary:active { transform: scale(0.97); }
         .btn-secondary {
-            display: inline-flex; align-items: center; gap: 0.4rem;
-            background: var(--bg-elevated); color: var(--text-primary); padding: 0.7rem 1.6rem;
-            border: 1px solid var(--border); border-radius: var(--radius-pill); font-weight: 600; font-size: 0.9rem;
-            transition: background 0.2s ease, transform 0.15s ease;
+            background: var(--bg-elevated); color: var(--text-primary); padding: 0.65rem 1.5rem;
+            border: 1px solid var(--border);
         }
         .btn-secondary:hover { background: var(--bg-elevated-2); text-decoration: none; }
-        .btn-secondary:active { transform: scale(0.97); }
         .hero-visual {
             background: var(--hero-img-bg); border-radius: var(--radius);
             overflow: hidden; aspect-ratio: 4 / 3;
@@ -135,36 +137,39 @@
         .hero-visual img { width: 100%; height: 100%; object-fit: cover; }
 
         /* ── Section ──────────────────────────── */
-        section { padding: 5rem 0; }
+        section { padding: 3rem 0; }
         .section-title {
-            font-size: 1.5rem; font-weight: 700; color: var(--accent);
-            letter-spacing: -0.02em; margin-bottom: 1rem; line-height: 1.2;
+            font-size: 1.3rem; font-weight: 700; color: var(--accent);
+            letter-spacing: -0.02em; margin-bottom: 0.5rem; line-height: 1.2;
         }
         .section-sub {
-            font-size: 0.9rem; color: var(--text-tertiary); max-width: 520px;
-            margin-bottom: 2.5rem; line-height: 1.7;
+            font-size: 0.88rem; color: var(--text-tertiary); max-width: 520px;
+            margin-bottom: 1.5rem; line-height: 1.6;
         }
         .eyebrow {
-            display: inline-block; font-family: var(--font-mono); font-size: 0.7rem;
+            display: inline-block; font-family: var(--font-mono); font-size: 0.65rem;
             font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
-            color: var(--accent-muted); margin-bottom: 0.5rem;
+            color: var(--accent-muted); margin-bottom: 0.35rem;
         }
 
         /* ── Features ─────────────────────────── */
         .features-grid {
-            display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem;
+            display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;
         }
         .features-grid-second {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem;
-            margin-top: 1.25rem;
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;
+            margin-top: 1rem;
         }
         .feature-card {
             background: var(--bg-elevated); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 1.5rem;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            border-radius: var(--radius); padding: 1.25rem;
+            transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
         }
-        .feature-card:hover {
-            border-color: var(--accent-light); box-shadow: 0 2px 16px rgba(0, 45, 100, 0.05);
+        @media (hover: hover) and (pointer: fine) {
+            .feature-card:hover {
+                border-color: var(--accent-light);
+                box-shadow: 0 2px 12px rgba(0, 45, 100, 0.06);
+            }
         }
         .feature-card.accent {
             background: linear-gradient(135deg, var(--accent), var(--accent-hover));
@@ -173,117 +178,113 @@
         .feature-card.accent h3 { color: #fff; }
         .feature-card.accent p { color: rgba(255, 255, 255, 0.75); }
         .feature-card.accent .card-icon { background: rgba(255, 255, 255, 0.15); color: #fff; }
-        .feature-card h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-primary); }
-        .feature-card p { font-size: 0.82rem; color: var(--text-tertiary); line-height: 1.6; }
+        .feature-card h3 { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-primary); }
+        .feature-card p { font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.5; }
         .card-icon {
-            font-size: 1.1rem; font-weight: 600; color: var(--accent);
-            width: 2rem; height: 2rem; background: var(--accent-ghost);
-            border-radius: 6px; display: flex; align-items: center; justify-content: center;
-            margin-bottom: 0.75rem; font-family: var(--font-mono);
+            font-size: 1rem; font-weight: 600; color: var(--accent);
+            width: 1.75rem; height: 1.75rem; background: var(--accent-ghost);
+            border-radius: 5px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 0.5rem; font-family: var(--font-mono);
         }
         .feature-compact {
             grid-column: 1 / -1;
-            display: flex; align-items: center; gap: 1rem;
+            display: flex; align-items: center; gap: 0.75rem;
             background: var(--bg-elevated); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 1rem 1.5rem; margin-top: 1.25rem;
+            border-radius: var(--radius); padding: 0.75rem 1.25rem; margin-top: 1rem;
         }
         .feature-compact .card-icon { margin-bottom: 0; flex-shrink: 0; }
-        .feature-compact h3 { font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
-        .feature-compact p { font-size: 0.82rem; color: var(--text-tertiary); }
+        .feature-compact h3 { font-size: 0.82rem; font-weight: 600; white-space: nowrap; }
+        .feature-compact p { font-size: 0.8rem; color: var(--text-tertiary); }
 
         /* ── Timeline ─────────────────────────── */
-        .timeline { position: relative; padding-left: 3rem; }
+        .timeline { position: relative; padding-left: 2.5rem; }
         .timeline::before {
-            content: ''; position: absolute; left: 1rem; top: 0.5rem; bottom: 0.5rem;
+            content: ''; position: absolute; left: 0.75rem; top: 0.5rem; bottom: 0.5rem;
             width: 1px; background: var(--border);
         }
-        .timeline-step { position: relative; padding-bottom: 2.5rem; }
+        .timeline-step { position: relative; padding-bottom: 1.5rem; }
         .timeline-step:last-child { padding-bottom: 0; }
         .timeline-step::before {
             content: attr(data-step);
-            position: absolute; left: -3rem; top: 0;
-            width: 2rem; height: 2rem; border-radius: 50%;
+            position: absolute; left: -2.5rem; top: 0;
+            width: 1.75rem; height: 1.75rem; border-radius: 50%;
             background: var(--accent); color: #fff;
             display: flex; align-items: center; justify-content: center;
-            font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600;
+            font-family: var(--font-mono); font-size: 0.65rem; font-weight: 600;
             z-index: 1;
         }
-        .timeline-step h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.2rem; color: var(--text-primary); }
-        .timeline-step p { font-size: 0.85rem; color: var(--text-tertiary); line-height: 1.6; max-width: 480px; }
+        .timeline-step h3 { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.1rem; color: var(--text-primary); }
+        .timeline-step p { font-size: 0.82rem; color: var(--text-tertiary); line-height: 1.5; max-width: 420px; }
 
         /* ── Code block ───────────────────────── */
         .code-block {
             background: var(--code-bg); color: var(--code-text); border-radius: var(--radius);
-            padding: 1.5rem 2rem; font-family: var(--font-mono); font-size: 0.82rem;
-            line-height: 1.8; overflow-x: auto; margin-bottom: 1rem; white-space: pre;
+            padding: 1.25rem 1.5rem; font-family: var(--font-mono); font-size: 0.8rem;
+            line-height: 1.7; overflow-x: auto; margin-bottom: 0.75rem; white-space: pre;
         }
         .code-block .comment { color: var(--code-comment); }
 
         /* ── Parameter cards ──────────────────── */
-        .param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
         .param-card {
             background: var(--bg-elevated); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 1.25rem;
+            border-radius: var(--radius); padding: 1rem 1.25rem;
         }
-        .param-card .field { font-size: 0.75rem; font-weight: 600; color: var(--accent); margin-bottom: 0.2rem; }
+        .param-card .field { font-size: 0.72rem; font-weight: 600; color: var(--accent); margin-bottom: 0.15rem; }
         .param-card .example {
-            font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-secondary);
-            background: var(--bg-elevated-2); padding: 0.1rem 0.4rem; border-radius: 3px;
-            display: inline-block; margin-bottom: 0.35rem;
-        }
-        .param-card .desc { font-size: 0.82rem; color: var(--text-tertiary); line-height: 1.5; }
-
-        /* ── Dependencies mini ────────────────── */
-        .deps {
-            display: flex; flex-wrap: wrap; gap: 0.5rem;
-        }
-        .deps span {
             font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary);
-            background: var(--bg-elevated); border: 1px solid var(--border);
-            padding: 0.2rem 0.6rem; border-radius: 4px;
+            background: var(--bg-elevated-2); padding: 0.1rem 0.35rem; border-radius: 3px;
+            display: inline-block; margin-bottom: 0.25rem;
         }
+        .param-card .desc { font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.4; }
 
         /* ── Footer ────────────────────────────── */
         footer {
-            border-top: 1px solid var(--border); padding: 2rem 0;
-            text-align: center; font-size: 0.8rem; color: var(--text-tertiary);
+            border-top: 1px solid var(--border); padding: 1.5rem 0;
+            text-align: center; font-size: 0.78rem; color: var(--text-tertiary);
+        }
+        footer .deps { margin-top: 0.4rem; display: flex; flex-wrap: wrap; gap: 0.35rem; justify-content: center; }
+        footer .deps span {
+            font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-tertiary);
+            background: var(--bg-elevated); border: 1px solid var(--border);
+            padding: 0.15rem 0.5rem; border-radius: 3px;
         }
         footer a { color: var(--text-secondary); }
 
         /* ── Responsive ────────────────────────── */
         @media (max-width: 1024px) {
-            .hero { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 2rem 4rem; min-height: auto; text-align: center; }
+            .hero { grid-template-columns: 1fr; gap: 1.5rem; padding: 2rem 1.5rem 2.5rem; text-align: center; }
             .hero-content { max-width: 100%; }
-            .hero-content p { max-width: 500px; margin-left: auto; margin-right: auto; }
+            .hero-content p { max-width: 480px; margin-left: auto; margin-right: auto; }
             .hero-buttons { justify-content: center; }
-            .hero-visual { max-width: 500px; margin: 0 auto; }
+            .hero-visual { max-width: 480px; margin: 0 auto; }
             .features-grid { grid-template-columns: 1fr; }
             .features-grid-second { grid-template-columns: 1fr; margin-top: 0; }
             .features-grid-second .feature-card:first-child { margin-top: 0; }
         }
         @media (max-width: 768px) {
             nav .nav-links a:not(.nav-cta) { display: none; }
-            .hero { padding: 2rem 1.25rem 3rem; }
-            .hero-content h1 { font-size: 2rem; }
-            .section-title { font-size: 1.3rem; }
+            .hero { padding: 1.5rem 1.25rem 2rem; }
+            .hero-content h1 { font-size: 1.65rem; }
+            .section-title { font-size: 1.15rem; }
+            .section-sub { font-size: 0.82rem; }
             .param-grid { grid-template-columns: 1fr; }
             .features-grid-second { grid-template-columns: 1fr; margin-top: 0; gap: 0; }
             .features-grid { gap: 0; }
             .features-grid > .feature-card { margin-bottom: 0; }
             .feature-compact { flex-wrap: wrap; gap: 0.5rem; }
-            .timeline { padding-left: 2.5rem; }
-            .timeline-step::before { left: -2.5rem; width: 1.75rem; height: 1.75rem; font-size: 0.65rem; }
-            section { padding: 3rem 0; }
+            .timeline { padding-left: 2.25rem; }
+            .timeline-step::before { left: -2.25rem; width: 1.5rem; height: 1.5rem; font-size: 0.6rem; }
+            section { padding: 2rem 0; }
         }
         @media (max-width: 480px) {
             .container { padding: 0 1.25rem; }
-            .code-block { padding: 1.25rem; font-size: 0.75rem; }
+            .code-block { padding: 1rem; font-size: 0.72rem; }
         }
     </style>
 </head>
 <body>
 
-<!-- ─── Nav ──────────────────────────────── -->
 <nav>
     <span class="logo">Play Store Reviews Scraper</span>
     <div class="nav-links">
@@ -293,17 +294,16 @@
     </div>
 </nav>
 
-<!-- ─── Hero ──────────────────────────────── -->
 <div class="hero">
     <div class="hero-content">
         <h1>Pull, preview, and export Google Play reviews.</h1>
-        <p>Scrape up to 10,000 reviews for any Play Store app. Filter, export, and summarize with AI.</p>
+        <p>Scrape up to 10,000 reviews for any Play Store app. Filter by country, rating, and sort order.</p>
         <div class="hero-buttons">
-            <a href="https://play-store-reviews-scraper.streamlit.app" target="_blank" class="btn-primary">
+            <a href="https://play-store-reviews-scraper.streamlit.app" target="_blank" class="btn btn-primary">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                 Launch App
             </a>
-            <a href="https://github.com/aw-bii/Play_Store_Reviews_Scraper" target="_blank" class="btn-secondary">
+            <a href="https://github.com/aw-bii/Play_Store_Reviews_Scraper" target="_blank" class="btn btn-secondary">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
                 View on GitHub
             </a>
@@ -314,19 +314,18 @@
     </div>
 </div>
 
-<!-- ─── Features ───────────────────────────── -->
 <section id="features">
     <div class="container">
-        <h2 class="section-title">Everything you need to analyze Play Store reviews.</h2>
-        <p class="section-sub">Scrape, filter, and export reviews in seconds. No API keys or setup required.</p>
+        <h2 class="section-title">Scrape reviews for any Play Store app.</h2>
+        <p class="section-sub">Up to 10,000 reviews. Filtered by country, rating, and sort order. Exported as CSV or Excel.</p>
 
         <div class="features-grid">
             <div class="feature-card accent reveal">
                 <div class="card-icon">&lt;/&gt;</div>
                 <h3>Bulk scraping</h3>
-                <p>Fetch up to 10,000 reviews for any Google Play app using its app ID. Pagination handled automatically.</p>
+                <p>Fetch up to 10,000 reviews using the app ID from any Play Store URL. Pagination handled automatically.</p>
             </div>
-            <div class="feature-card reveal reveal-delay-1">
+            <div class="feature-card reveal reveal-d1">
                 <div class="card-icon">#</div>
                 <h3>Smart filters</h3>
                 <p>Filter by country, star rating, and sort order - newest or most relevant.</p>
@@ -334,81 +333,77 @@
         </div>
 
         <div class="features-grid-second">
-            <div class="feature-card reveal reveal-delay-2">
+            <div class="feature-card reveal reveal-d2">
                 <div class="card-icon">*</div>
                 <h3>Ratings &amp; NPS</h3>
-                <p>View average rating, 5-star count, and NPS score calculated from your data set.</p>
+                <p>Average rating, 5-star count, and NPS calculated from your data.</p>
             </div>
-            <div class="feature-card reveal reveal-delay-3">
+            <div class="feature-card reveal reveal-d3">
                 <div class="card-icon">~</div>
-                <h3>CSV &amp; XLSX</h3>
-                <p>Download scraped reviews as CSV or Excel files for further analysis.</p>
+                <h3>CSV &amp; Excel</h3>
+                <p>Download as CSV or XLSX for further analysis in your tools.</p>
             </div>
-            <div class="feature-card reveal reveal-delay-4">
+            <div class="feature-card reveal reveal-d4">
                 <div class="card-icon">@</div>
                 <h3>AI summaries</h3>
-                <p>One-click AI-powered review summary using Google Gemini.</p>
+                <p>One-click review summary powered by Google Gemini.</p>
             </div>
         </div>
 
-        <div class="feature-compact reveal reveal-delay-5">
+        <div class="feature-compact reveal reveal-d5">
             <div class="card-icon">+</div>
             <h3>Version tracking</h3>
-            <p>Optionally include the app version column in your export for trend analysis over time.</p>
+            <p>Include the app version column to track review trends over releases.</p>
         </div>
     </div>
 </section>
 
-<!-- ─── How It Works ───────────────────────── -->
 <section>
     <div class="container">
         <span class="eyebrow">How it works</span>
-        <h2 class="section-title">Three clicks to reviews.</h2>
-        <p class="section-sub">No accounts, no API keys. Just an app ID and you are set.</p>
+        <h2 class="section-title">Get reviews in four steps.</h2>
+        <p class="section-sub">Just an app ID and you're done.</p>
 
         <div class="timeline">
             <div class="timeline-step" data-step="1">
                 <h3>Enter App ID</h3>
-                <p>Copy the ID from any Play Store URL - look for <code>?id=com.spotify.music</code> in the address.</p>
+                <p>From the Play Store URL - <code>?id=com.spotify.music</code> is what you need.</p>
             </div>
             <div class="timeline-step" data-step="2">
                 <h3>Set filters</h3>
-                <p>Choose country, sort order, star rating, and how many reviews to pull.</p>
+                <p>Pick country, sort order, and which star ratings to include.</p>
             </div>
             <div class="timeline-step" data-step="3">
                 <h3>Scrape</h3>
-                <p>Hit "Start scraping" and watch reviews populate in real time with progress tracking.</p>
+                <p>Hit "Start scraping" and reviews populate in real time.</p>
             </div>
             <div class="timeline-step" data-step="4">
                 <h3>Export</h3>
-                <p>Preview the data table, generate an AI summary, or download as CSV or XLSX.</p>
+                <p>Preview the table, get an AI summary, or download as CSV or XLSX.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ─── Quick Start ────────────────────────── -->
 <section>
     <div class="container">
-        <h2 class="section-title">Run locally in seconds.</h2>
-        <p class="section-sub">Clone the repo, install dependencies, and launch.</p>
+        <h2 class="section-title">Run locally.</h2>
+        <p class="section-sub">Clone, install, run.</p>
 
         <div class="code-block"><span class="comment"># clone and install</span>
 git clone https://github.com/aw-bii/Play_Store_Reviews_Scraper.git
 cd Play_Store_Reviews_Scraper
 pip install -r requirements.txt
 
-<span class="comment"># launch the app</span>
+<span class="comment"># launch</span>
 streamlit run streamlit_app.py</div>
-        <p style="font-size:0.82rem;color:var(--text-tertiary);">Opens at <a href="http://localhost:8501" style="font-weight:600;color:var(--accent);" target="_blank">http://localhost:8501</a></p>
+        <p style="font-size:0.8rem;color:var(--text-tertiary);">Opens at <a href="http://localhost:8501" style="font-weight:600;color:var(--accent);" target="_blank">http://localhost:8501</a></p>
     </div>
 </section>
 
-<!-- ─── Parameters ─────────────────────────── -->
 <section id="usage">
     <div class="container">
-        <h2 class="section-title">Parameters at a glance.</h2>
-        <p class="section-sub">All the controls available in the sidebar.</p>
+        <h2 class="section-title">Sidebar controls.</h2>
 
         <div class="param-grid">
             <div class="param-card reveal">
@@ -416,53 +411,45 @@ streamlit run streamlit_app.py</div>
                 <div class="example">com.spotify.music</div>
                 <div class="desc">From the Play Store URL, after <code>?id=</code></div>
             </div>
-            <div class="param-card reveal reveal-delay-1">
+            <div class="param-card reveal reveal-d1">
                 <div class="field">Country</div>
                 <div class="example">in, us, gb, de</div>
                 <div class="desc">ISO 3166-1 alpha-2 country code</div>
             </div>
-            <div class="param-card reveal reveal-delay-2">
+            <div class="param-card reveal reveal-d2">
                 <div class="field">Reviews</div>
                 <div class="example">500</div>
-                <div class="desc">Number of reviews to fetch (1 to 10,000)</div>
+                <div class="desc">Number to fetch (1 to 10,000)</div>
             </div>
-            <div class="param-card reveal reveal-delay-3">
+            <div class="param-card reveal reveal-d3">
                 <div class="field">Sort By</div>
                 <div class="example">Newest, Most Relevant</div>
-                <div class="desc">Sort order for review results</div>
+                <div class="desc">Sort order for results</div>
             </div>
-            <div class="param-card reveal reveal-delay-4">
+            <div class="param-card reveal reveal-d4">
                 <div class="field">Star Filter</div>
                 <div class="example">1, 2, 5</div>
-                <div class="desc">Optional filter by rating. Leave empty for all.</div>
+                <div class="desc">Optional. Leave empty for all ratings.</div>
             </div>
-            <div class="param-card reveal reveal-delay-5">
+            <div class="param-card reveal reveal-d5">
                 <div class="field">App Version</div>
                 <div class="example">toggle</div>
-                <div class="desc">Include the version column in your export</div>
+                <div class="desc">Include version column in export</div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ─── Built With ─────────────────────────── -->
-<section>
-    <div class="container" style="max-width:520px;text-align:center;">
-        <h2 class="section-title" style="font-size:1.1rem;">Built with</h2>
-        <div class="deps" style="justify-content:center;">
+<footer>
+    <div class="container">
+        <p><a href="https://github.com/aw-bii/Play_Store_Reviews_Scraper">Play Store Reviews Scraper</a> &middot; Internal tool</p>
+        <div class="deps">
             <span>streamlit</span>
             <span>google-play-scraper</span>
             <span>pandas</span>
             <span>openpyxl</span>
             <span>pycountry</span>
         </div>
-    </div>
-</section>
-
-<!-- ─── Footer ──────────────────────────────── -->
-<footer>
-    <div class="container">
-        <p><a href="https://github.com/aw-bii/Play_Store_Reviews_Scraper">Play Store Reviews Scraper</a> &middot; Internal tool - not for public distribution</p>
     </div>
 </footer>
 
