@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Store Reviews Scraper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --be-blue: #002d64;
+            --be-blue-2: #afbed2;
+            --be-blue-5: #415f8c;
+            --be-gray: #464646;
+            --be-gray-2: #dcdcdc;
+            --be-gray-3: #cdcdcd;
+            --be-gray-4: #a0a0a0;
+            --be-gray-5: #646464;
+            --be-red: #e60028;
+            --be-red-2: #eb5a50;
+            --text-1: #464646;
+            --text-2: #646464;
+            --text-3: #a0a0a0;
+            --card-bg: #f5f6f8;
+            --card-br: #e8ecf0;
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        }
+        html { font-size: 16px; scroll-behavior: smooth; }
+        body {
+            font-family: var(--font);
+            color: var(--text-1);
+            background: #fff;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--be-blue); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        img { max-width: 100%; height: auto; }
+
+        .container { max-width: 1040px; margin: 0 auto; padding: 0 2rem; }
+
+        /* ── Nav ────────────────────────────── */
+        nav {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.25rem 2rem; max-width: 1080px; margin: 0 auto;
+        }
+        nav .logo { font-weight: 700; font-size: 1.05rem; color: var(--be-blue); }
+        nav .nav-links { display: flex; gap: 1.75rem; align-items: center; }
+        nav .nav-links a { font-size: 0.875rem; font-weight: 500; color: var(--text-2); transition: color 0.15s; }
+        nav .nav-links a:hover { color: var(--be-blue); text-decoration: none; }
+        .nav-cta {
+            display: inline-block; background: var(--be-red); color: #fff !important;
+            padding: 0.45rem 1.2rem; border-radius: 980px; font-weight: 600; font-size: 0.8rem;
+            transition: background 0.15s;
+        }
+        .nav-cta:hover { background: var(--be-red-2); text-decoration: none !important; }
+
+        /* ── Hero ────────────────────────────── */
+        .hero {
+            padding: 5rem 0 4rem; text-align: center; max-width: 720px; margin: 0 auto;
+        }
+        .hero h1 {
+            font-size: 3rem; font-weight: 700; letter-spacing: -0.03em;
+            color: var(--be-blue); line-height: 1.1; margin-bottom: 1rem;
+        }
+        .hero p {
+            font-size: 1.1rem; color: var(--text-3); line-height: 1.7;
+            max-width: 580px; margin: 0 auto 2rem;
+        }
+        .hero-buttons { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: var(--be-blue); color: #fff; padding: 0.7rem 1.6rem;
+            border-radius: 980px; font-weight: 600; font-size: 0.9rem;
+            transition: background 0.15s, transform 0.1s;
+        }
+        .btn-primary:hover { background: var(--be-blue-5); text-decoration: none; }
+        .btn-secondary {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: var(--card-bg); color: var(--text-1); padding: 0.7rem 1.6rem;
+            border: 1px solid var(--be-gray-3); border-radius: 980px; font-weight: 600; font-size: 0.9rem;
+            transition: background 0.15s;
+        }
+        .btn-secondary:hover { background: var(--be-gray-2); text-decoration: none; }
+
+        /* ── Section ──────────────────────────── */
+        section { padding: 4rem 0; }
+        section + section { border-top: 1px solid var(--card-br); }
+        .section-label {
+            font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em;
+            text-transform: uppercase; color: var(--be-blue); margin-bottom: 0.75rem;
+        }
+        .section-title {
+            font-size: 1.75rem; font-weight: 700; color: var(--be-blue);
+            letter-spacing: -0.02em; margin-bottom: 0.75rem; line-height: 1.2;
+        }
+        .section-sub {
+            font-size: 0.95rem; color: var(--text-3); max-width: 560px;
+            margin-bottom: 2.5rem; line-height: 1.7;
+        }
+
+        /* ── Features grid ────────────────────── */
+        .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .feature-card {
+            background: var(--card-bg); border: 1px solid var(--card-br); border-radius: 8px;
+            padding: 1.75rem; transition: box-shadow 0.2s;
+        }
+        .feature-card:hover { box-shadow: 0 4px 20px rgba(0,45,100,0.06); }
+        .feature-card .icon {
+            font-size: 1.5rem; font-weight: 700; color: var(--be-blue);
+            width: 2.5rem; height: 2.5rem; background: rgba(0,45,100,0.06);
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .feature-card h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-1); }
+        .feature-card p { font-size: 0.85rem; color: var(--text-3); line-height: 1.6; }
+
+        /* ── How it works ─────────────────────── */
+        .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; counter-reset: step; }
+        .step {
+            text-align: center; padding: 1.5rem; position: relative;
+        }
+        .step::before {
+            counter-increment: step; content: counter(step);
+            display: flex; align-items: center; justify-content: center;
+            width: 2.5rem; height: 2.5rem; border-radius: 50%;
+            background: var(--be-blue); color: #fff;
+            font-weight: 700; font-size: 0.9rem; margin: 0 auto 1rem;
+        }
+        .step h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.35rem; }
+        .step p { font-size: 0.82rem; color: var(--text-3); line-height: 1.6; }
+
+        /* ── Usage table ──────────────────────── */
+        .usage-table {
+            width: 100%; border-collapse: collapse; font-size: 0.88rem;
+        }
+        .usage-table th {
+            text-align: left; padding: 0.7rem 1rem; background: var(--card-bg);
+            font-weight: 600; color: var(--text-2); border-bottom: 2px solid var(--card-br);
+        }
+        .usage-table td {
+            padding: 0.7rem 1rem; border-bottom: 1px solid var(--card-br); color: var(--text-1);
+        }
+        .usage-table td:first-child {
+            font-weight: 600; color: var(--be-blue); white-space: nowrap;
+        }
+        .usage-table code {
+            background: var(--card-bg); padding: 0.15rem 0.4rem; border-radius: 3px;
+            font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.8rem;
+            color: var(--be-red);
+        }
+        .usage-table tr:hover td { background: #fafbfc; }
+
+        /* ── Quick start code ─────────────────── */
+        .code-block {
+            background: var(--be-blue); color: #fff; border-radius: 8px;
+            padding: 1.5rem 2rem; font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85rem; line-height: 1.8; overflow-x: auto;
+            margin-bottom: 1rem; white-space: pre;
+        }
+        .code-block .comment { color: var(--be-blue-2); }
+        .code-block .cmd { color: #fff; }
+        .code-block .output { color: var(--be-blue-2); }
+
+        /* ── Footer ────────────────────────────── */
+        footer {
+            border-top: 1px solid var(--card-br); padding: 2rem 0;
+            text-align: center; font-size: 0.82rem; color: var(--text-3);
+        }
+        footer a { color: var(--text-2); }
+
+        /* ── Responsive ────────────────────────── */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .features { grid-template-columns: 1fr; }
+            .steps { grid-template-columns: 1fr 1fr; }
+            nav .nav-links a:not(.nav-cta) { display: none; }
+        }
+        @media (max-width: 480px) {
+            .steps { grid-template-columns: 1fr; }
+            .container { padding: 0 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ─── Nav ──────────────────────────────── -->
+<nav>
+    <span class="logo">Play Store Reviews Scraper</span>
+    <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#usage">Usage</a>
+        <a href="https://github.com/aw-bii/Play_Store_Reviews_Scraper" target="_blank">GitHub</a>
+        <a href="https://play-store-reviews-scraper.streamlit.app" target="_blank" class="nav-cta">Open App</a>
+    </div>
+</nav>
+
+<!-- ─── Hero ──────────────────────────────── -->
+<div class="hero">
+    <h1>Pull, preview, and export<br>Google Play reviews.</h1>
+    <p>A lightweight tool that scrapes up to 10,000 reviews for any Play Store app — with filtering, export, and AI-powered summaries.</p>
+    <div class="hero-buttons">
+        <a href="https://play-store-reviews-scraper.streamlit.app" target="_blank" class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Launch App
+        </a>
+        <a href="https://github.com/aw-bii/Play_Store_Reviews_Scraper" target="_blank" class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            View on GitHub
+        </a>
+    </div>
+</div>
+
+<!-- ─── Features ───────────────────────────── -->
+<section id="features">
+    <div class="container">
+        <div class="section-label">Features</div>
+        <h2 class="section-title">Everything you need to analyse Play Store reviews.</h2>
+        <p class="section-sub">Scrape, filter, and export reviews in seconds — no API keys or setup required.</p>
+        <div class="features">
+            <div class="feature-card">
+                <div class="icon">⌂</div>
+                <h3>Bulk scraping</h3>
+                <p>Fetch up to 10,000 reviews for any Google Play app using its app ID.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">⌘</div>
+                <h3>Smart filters</h3>
+                <p>Filter by country, star rating, and sort order (newest or most relevant).</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">◉</div>
+                <h3>Rating distribution</h3>
+                <p>View summary metrics including average rating, 5-star count, and NPS at a glance.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">⇩</div>
+                <h3>CSV &amp; XLSX export</h3>
+                <p>Download scraped reviews as CSV or Excel files for further analysis.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">✦</div>
+                <h3>AI summaries</h3>
+                <p>One-click AI-powered summary of reviews using Google Gemini.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">◻</div>
+                <h3>Version tracking</h3>
+                <p>Optionally include the app version column in your export for trend analysis.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── How It Works ───────────────────────── -->
+<section>
+    <div class="container">
+        <div class="section-label">How It Works</div>
+        <h2 class="section-title">Three clicks to reviews.</h2>
+        <p class="section-sub">No accounts, no API keys — just an app ID and you're set.</p>
+        <div class="steps">
+            <div class="step">
+                <h3>Enter App ID</h3>
+                <p>Copy the ID from any Play Store URL (<code style="font-size:0.78rem;background:var(--card-bg);padding:0.1rem 0.3rem;border-radius:2px;">?id=com.spotify.music</code>)</p>
+            </div>
+            <div class="step">
+                <h3>Set filters</h3>
+                <p>Choose country, sort order, star rating, and how many reviews to pull.</p>
+            </div>
+            <div class="step">
+                <h3>Scrape</h3>
+                <p>Hit "Start scraping" and watch reviews populate in real time.</p>
+            </div>
+            <div class="step">
+                <h3>Export</h3>
+                <p>Preview the data table, generate an AI summary, or download as CSV / XLSX.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── Quick Start ────────────────────────── -->
+<section>
+    <div class="container">
+        <div class="section-label">Quick Start</div>
+        <h2 class="section-title">Run locally in seconds.</h2>
+        <p class="section-sub">Clone the repo, install dependencies, and launch.</p>
+        <div class="code-block">git clone https://github.com/aw-bii/Play_Store_Reviews_Scraper.git
+cd Play_Store_Reviews_Scraper
+
+pip install -r requirements.txt
+
+streamlit run streamlit_app.py</div>
+        <p style="font-size:0.85rem;color:var(--text-3);">Opens at <a href="http://localhost:8501" style="font-weight:600;">http://localhost:8501</a></p>
+    </div>
+</section>
+
+<!-- ─── Usage ───────────────────────────────── -->
+<section id="usage">
+    <div class="container">
+        <div class="section-label">Usage</div>
+        <h2 class="section-title">Parameters at a glance.</h2>
+        <p class="section-sub">All the knobs available in the sidebar.</p>
+        <table class="usage-table">
+            <thead>
+                <tr><th>Field</th><th>Example</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>App ID</td><td><code>com.spotify.music</code></td><td>From the Play Store URL (<code>?id=...</code>)</td></tr>
+                <tr><td>Country</td><td><code>in</code></td><td>ISO 3166-1 alpha-2 country code</td></tr>
+                <tr><td>Reviews</td><td><code>500</code></td><td>Number of reviews to fetch (1–10,000)</td></tr>
+                <tr><td>Sort By</td><td><code>Newest</code></td><td>Newest or Most Relevant</td></tr>
+                <tr><td>Star Filter</td><td><code>1, 2</code></td><td>Optional — leave empty for all ratings</td></tr>
+                <tr><td>App Version</td><td>checkbox</td><td>Toggle to include the version column</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ─── Dependencies ────────────────────────── -->
+<section>
+    <div class="container">
+        <div class="section-label">Built With</div>
+        <h2 class="section-title">Modern Python stack.</h2>
+        <p class="section-sub">Powered by these open-source libraries.</p>
+        <table class="usage-table" style="max-width:600px;">
+            <thead>
+                <tr><th>Package</th><th>Purpose</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Streamlit</td><td>Web UI</td></tr>
+                <tr><td>google-play-scraper</td><td>Play Store data extraction</td></tr>
+                <tr><td>pandas</td><td>Data handling and export</td></tr>
+                <tr><td>openpyxl</td><td>XLSX export</td></tr>
+                <tr><td>pycountry</td><td>Country name/code lookup</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ─── Footer ──────────────────────────────── -->
+<footer>
+    <div class="container">
+        <p><a href="https://github.com/aw-bii/Play_Store_Reviews_Scraper">Play Store Reviews Scraper</a> &middot; Internal tool &mdash; not for public distribution</p>
+    </div>
+</footer>
+
+</body>
+</html>
